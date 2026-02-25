@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
   StyleSheet, View, ScrollView, TextInput,
-  TouchableOpacity, Alert,
+  TouchableOpacity, Alert, ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import type { Seedling, SeedlingGrid } from '@/types/home';
@@ -10,6 +11,7 @@ import {
   CREAM, GARDEN_GREEN, LEAF_GREEN, LIGHT_GREEN,
   PETAL_YELLOW, SOIL_BROWN, WATER_BLUE,
 } from '@/data/home';
+import { useCreateGrid } from '@/hooks/useGrids';
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
@@ -178,6 +180,9 @@ function SeedlingCard({ seedling, index, onRemove }: SeedlingCardProps) {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function CreateGridScreen() {
+  const router = useRouter();
+  const { mutate: createGrid, isPending } = useCreateGrid();
+
   // Grid-level fields
   const [gridName, setGridName] = useState('');
   const [gridDescription, setGridDescription] = useState('');
@@ -222,8 +227,7 @@ export default function CreateGridScreen() {
     setSubmitted(true);
     if (!canCreate) return;
 
-    const newGrid: SeedlingGrid = {
-      id: gridName.toLowerCase().replace(/\s+/g, '-'),
+    const newGrid: Omit<SeedlingGrid, 'id'> = {
       name: gridName.trim(),
       emoji: gridEmoji,
       description: gridDescription.trim() || 'A new seedling garden',
@@ -251,19 +255,21 @@ export default function CreateGridScreen() {
       footerIcons: ['🪨', '🌱', '🪱', '🌱', '🪨'],
     };
 
-    Alert.alert(
-      '🌱 Garden Created!',
-      `"${newGrid.name}" has been created with ${newGrid.seedlings.length} seedling${newGrid.seedlings.length !== 1 ? 's' : ''}.`,
-      [{
-        text: 'OK', onPress: () => {
-          setGridName('');
-          setGridDescription('');
-          setGridEmoji('🌱');
-          setSeedlings([]);
-          setSubmitted(false);
-        },
-      }]
-    );
+    createGrid(newGrid, {
+      onSuccess: (created) => {
+        // Reset form
+        setGridName('');
+        setGridDescription('');
+        setGridEmoji('🌱');
+        setSeedlings([]);
+        setSubmitted(false);
+        // Navigate to the newly created grid's detail screen
+        router.push({ pathname: '/(tabs)/grid/[id]', params: { id: created.id } });
+      },
+      onError: (err) => {
+        Alert.alert('Error', `Could not create garden: ${err.message}`);
+      },
+    });
   };
 
   return (
@@ -363,13 +369,18 @@ export default function CreateGridScreen() {
 
       {/* Create Button */}
       <TouchableOpacity
-        style={[styles.createButton, submitted && !canCreate && styles.createButtonDisabled]}
+        style={[styles.createButton, (submitted && !canCreate) && styles.createButtonDisabled]}
         onPress={handleCreate}
         activeOpacity={0.8}
+        disabled={isPending}
       >
-        <ThemedText style={[styles.createButtonText, submitted && !canCreate && styles.createButtonTextDisabled]}>
-          🌱 Create Garden
-        </ThemedText>
+        {isPending ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <ThemedText style={[styles.createButtonText, (submitted && !canCreate) && styles.createButtonTextDisabled]}>
+            🌱 Create Garden
+          </ThemedText>
+        )}
       </TouchableOpacity>
 
       {/* Footer */}

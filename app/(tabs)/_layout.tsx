@@ -37,6 +37,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="link" color={color} />,
         }}
       />
+      {/* Hidden screen — grid detail lives inside the tab navigator so the
+          tab bar (including the Home tab) remains visible on the detail screen.
+          href: null prevents it from appearing as its own tab entry. */}
+      <Tabs.Screen
+        name="grid/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

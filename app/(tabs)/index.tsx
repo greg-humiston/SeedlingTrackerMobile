@@ -1,10 +1,11 @@
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import type { SeedlingGrid } from '@/types/home';
-import { SEEDLING_GRIDS } from '@/data/home';
+import { GARDEN_GREEN } from '@/data/home';
 import { styles } from '@/styles/home';
+import { useGrids } from '@/hooks/useGrids';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -39,6 +40,13 @@ function GridCard({ name, emoji, description, seedlings, stats, onPress }: GridC
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { data: grids, isLoading, isError, error, refetch } = useGrids();
+
+  const totalSeedlings = (grids ?? []).reduce((sum, g) => sum + g.seedlings.length, 0);
+  const totalNeedWater = (grids ?? []).reduce(
+    (sum, g) => sum + Number(g.stats.find(s => s.label === 'Need Water')?.value ?? 0),
+    0,
+  );
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -61,24 +69,17 @@ export default function HomeScreen() {
       {/* Summary stats */}
       <ThemedView style={styles.summaryBar}>
         <View style={styles.summaryItem}>
-          <ThemedText style={styles.summaryValue}>{SEEDLING_GRIDS.length}</ThemedText>
+          <ThemedText style={styles.summaryValue}>{grids?.length ?? '—'}</ThemedText>
           <ThemedText style={styles.summaryLabel}>Gardens</ThemedText>
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
-          <ThemedText style={styles.summaryValue}>
-            {SEEDLING_GRIDS.reduce((sum, g) => sum + g.seedlings.length, 0)}
-          </ThemedText>
+          <ThemedText style={styles.summaryValue}>{grids ? totalSeedlings : '—'}</ThemedText>
           <ThemedText style={styles.summaryLabel}>Seedlings</ThemedText>
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
-          <ThemedText style={styles.summaryValue}>
-            {SEEDLING_GRIDS.reduce(
-              (sum, g) => sum + Number(g.stats.find(s => s.label === 'Need Water')?.value ?? 0),
-              0
-            )}
-          </ThemedText>
+          <ThemedText style={styles.summaryValue}>{grids ? totalNeedWater : '—'}</ThemedText>
           <ThemedText style={styles.summaryLabel}>Need Water</ThemedText>
         </View>
       </ThemedView>
@@ -87,11 +88,29 @@ export default function HomeScreen() {
       <ThemedView style={styles.section}>
         <ThemedText style={styles.sectionTitle}>🌿 My Gardens</ThemedText>
         <ThemedText style={styles.sectionHint}>Tap a garden to view its seedlings</ThemedText>
-        {SEEDLING_GRIDS.map((grid) => (
+
+        {isLoading && (
+          <View style={styles.statusContainer}>
+            <ActivityIndicator size="large" color={GARDEN_GREEN} />
+            <ThemedText style={styles.statusText}>Loading your gardens...</ThemedText>
+          </View>
+        )}
+
+        {isError && (
+          <View style={styles.statusContainer}>
+            <ThemedText style={styles.errorText}>Could not load gardens.</ThemedText>
+            <ThemedText style={styles.errorDetail}>{error?.message}</ThemedText>
+            <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+              <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {grids?.map((grid) => (
           <GridCard
             key={grid.id}
             {...grid}
-            onPress={() => router.push({ pathname: '/grid/[id]', params: { id: grid.id } })}
+            onPress={() => router.push({ pathname: '/(tabs)/grid/[id]', params: { id: grid.id } })}
           />
         ))}
       </ThemedView>

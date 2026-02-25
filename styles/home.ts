@@ -169,6 +169,39 @@ export const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
+  // Loading / error states
+  statusContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 10,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 8,
+  },
+  errorText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#C0392B',
+  },
+  errorDetail: {
+    fontSize: 12,
+    color: '#888',
+  },
+  retryButton: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: GARDEN_GREEN,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+
   // Footer
   soilBar: {
     flexDirection: 'row',
