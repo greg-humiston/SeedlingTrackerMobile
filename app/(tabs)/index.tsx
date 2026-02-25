@@ -1,98 +1,110 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import type { SeedlingGrid } from '@/types/home';
+import { SEEDLING_GRIDS } from '@/data/home';
+import { styles } from '@/styles/home';
 
-export default function HomeScreen() {
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+type GridCardProps = SeedlingGrid & {
+  onPress: () => void;
+};
+
+function GridCard({ name, emoji, description, seedlings, stats, onPress }: GridCardProps) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <TouchableOpacity style={styles.gridCard} onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.gridCardLeft}>
+        <ThemedText style={styles.gridCardEmoji}>{emoji}</ThemedText>
+      </View>
+      <View style={styles.gridCardBody}>
+        <ThemedText style={styles.gridCardName}>{name}</ThemedText>
+        <ThemedText style={styles.gridCardDescription}>{description}</ThemedText>
+        <View style={styles.gridCardMeta}>
+          <ThemedText style={styles.gridCardMetaText}>
+            🌱 {seedlings.length} seedlings
+          </ThemedText>
+          <ThemedText style={styles.gridCardMetaText}>
+            💧 {stats.find(s => s.label === 'Need Water')?.value ?? '0'} need water
+          </ThemedText>
+        </View>
+      </View>
+      <ThemedText style={styles.gridCardChevron}>›</ThemedText>
+    </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+export default function HomeScreen() {
+  const router = useRouter();
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      {/* Branding Header */}
+      <View style={styles.headerBanner}>
+        <ThemedText style={styles.brandingLabel}>Welcome to</ThemedText>
+        <ThemedText style={styles.brandingTitle}>🌱 SeedlingTracker</ThemedText>
+        <ThemedText style={styles.brandingSubtitle}>
+          Track, nurture, and grow your seedlings with care.
+        </ThemedText>
+        <View style={styles.decorRow}>
+          <ThemedText style={styles.decorIcon}>🌿</ThemedText>
+          <ThemedText style={styles.decorIcon}>🌸</ThemedText>
+          <ThemedText style={styles.decorIcon}>🍃</ThemedText>
+          <ThemedText style={styles.decorIcon}>🌻</ThemedText>
+          <ThemedText style={styles.decorIcon}>🌿</ThemedText>
+        </View>
+      </View>
+
+      {/* Summary stats */}
+      <ThemedView style={styles.summaryBar}>
+        <View style={styles.summaryItem}>
+          <ThemedText style={styles.summaryValue}>{SEEDLING_GRIDS.length}</ThemedText>
+          <ThemedText style={styles.summaryLabel}>Gardens</ThemedText>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}>
+          <ThemedText style={styles.summaryValue}>
+            {SEEDLING_GRIDS.reduce((sum, g) => sum + g.seedlings.length, 0)}
+          </ThemedText>
+          <ThemedText style={styles.summaryLabel}>Seedlings</ThemedText>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}>
+          <ThemedText style={styles.summaryValue}>
+            {SEEDLING_GRIDS.reduce(
+              (sum, g) => sum + Number(g.stats.find(s => s.label === 'Need Water')?.value ?? 0),
+              0
+            )}
+          </ThemedText>
+          <ThemedText style={styles.summaryLabel}>Need Water</ThemedText>
+        </View>
+      </ThemedView>
+
+      {/* Grid List */}
+      <ThemedView style={styles.section}>
+        <ThemedText style={styles.sectionTitle}>🌿 My Gardens</ThemedText>
+        <ThemedText style={styles.sectionHint}>Tap a garden to view its seedlings</ThemedText>
+        {SEEDLING_GRIDS.map((grid) => (
+          <GridCard
+            key={grid.id}
+            {...grid}
+            onPress={() => router.push({ pathname: '/grid/[id]', params: { id: grid.id } })}
+          />
+        ))}
+      </ThemedView>
+
+      {/* Footer decoration */}
+      <View style={styles.soilBar}>
+        <ThemedText style={styles.soilEmoji}>🪨</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🌱</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🪱</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🌱</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🪨</ThemedText>
+      </View>
+    </ScrollView>
+  );
+}
+
