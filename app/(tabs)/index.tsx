@@ -1,98 +1,295 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import type { SeedlingGrid } from '@/types/home';
+import {
+  CREAM, GARDEN_GREEN, LEAF_GREEN, LIGHT_GREEN,
+  SEEDLING_GRIDS, SOIL_BROWN,
+} from '@/data/home';
 
-export default function HomeScreen() {
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+type GridCardProps = SeedlingGrid & {
+  onPress: () => void;
+};
+
+function GridCard({ name, emoji, description, seedlings, stats, onPress }: GridCardProps) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <TouchableOpacity style={styles.gridCard} onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.gridCardLeft}>
+        <ThemedText style={styles.gridCardEmoji}>{emoji}</ThemedText>
+      </View>
+      <View style={styles.gridCardBody}>
+        <ThemedText style={styles.gridCardName}>{name}</ThemedText>
+        <ThemedText style={styles.gridCardDescription}>{description}</ThemedText>
+        <View style={styles.gridCardMeta}>
+          <ThemedText style={styles.gridCardMetaText}>
+            🌱 {seedlings.length} seedlings
+          </ThemedText>
+          <ThemedText style={styles.gridCardMetaText}>
+            💧 {stats.find(s => s.label === 'Need Water')?.value ?? '0'} need water
+          </ThemedText>
+        </View>
+      </View>
+      <ThemedText style={styles.gridCardChevron}>›</ThemedText>
+    </TouchableOpacity>
   );
 }
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+export default function HomeScreen() {
+  const router = useRouter();
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      {/* Branding Header */}
+      <View style={styles.headerBanner}>
+        <ThemedText style={styles.brandingLabel}>Welcome to</ThemedText>
+        <ThemedText style={styles.brandingTitle}>🌱 SeedlingTracker</ThemedText>
+        <ThemedText style={styles.brandingSubtitle}>
+          Track, nurture, and grow your seedlings with care.
+        </ThemedText>
+        <View style={styles.decorRow}>
+          <ThemedText style={styles.decorIcon}>🌿</ThemedText>
+          <ThemedText style={styles.decorIcon}>🌸</ThemedText>
+          <ThemedText style={styles.decorIcon}>🍃</ThemedText>
+          <ThemedText style={styles.decorIcon}>🌻</ThemedText>
+          <ThemedText style={styles.decorIcon}>🌿</ThemedText>
+        </View>
+      </View>
+
+      {/* Summary stats */}
+      <ThemedView style={styles.summaryBar}>
+        <View style={styles.summaryItem}>
+          <ThemedText style={styles.summaryValue}>{SEEDLING_GRIDS.length}</ThemedText>
+          <ThemedText style={styles.summaryLabel}>Gardens</ThemedText>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}>
+          <ThemedText style={styles.summaryValue}>
+            {SEEDLING_GRIDS.reduce((sum, g) => sum + g.seedlings.length, 0)}
+          </ThemedText>
+          <ThemedText style={styles.summaryLabel}>Seedlings</ThemedText>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}>
+          <ThemedText style={styles.summaryValue}>
+            {SEEDLING_GRIDS.reduce(
+              (sum, g) => sum + Number(g.stats.find(s => s.label === 'Need Water')?.value ?? 0),
+              0
+            )}
+          </ThemedText>
+          <ThemedText style={styles.summaryLabel}>Need Water</ThemedText>
+        </View>
+      </ThemedView>
+
+      {/* Grid List */}
+      <ThemedView style={styles.section}>
+        <ThemedText style={styles.sectionTitle}>🌿 My Gardens</ThemedText>
+        <ThemedText style={styles.sectionHint}>Tap a garden to view its seedlings</ThemedText>
+        {SEEDLING_GRIDS.map((grid) => (
+          <GridCard
+            key={grid.id}
+            {...grid}
+            onPress={() => router.push({ pathname: '/grid/[id]', params: { id: grid.id } })}
+          />
+        ))}
+      </ThemedView>
+
+      {/* Footer decoration */}
+      <View style={styles.soilBar}>
+        <ThemedText style={styles.soilEmoji}>🪨</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🌱</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🪱</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🌱</ThemedText>
+        <ThemedText style={styles.soilEmoji}>🪨</ThemedText>
+      </View>
+    </ScrollView>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: CREAM,
+  },
+  scrollContent: {
+    paddingBottom: 32,
+  },
+
+  // Branding header
+  headerBanner: {
+    backgroundColor: GARDEN_GREEN,
+    paddingTop: 72,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    alignItems: 'center',
+  },
+  brandingLabel: {
+    fontSize: 14,
+    color: LIGHT_GREEN,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  brandingTitle: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  brandingSubtitle: {
+    fontSize: 14,
+    color: LIGHT_GREEN,
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 16,
+  },
+  decorRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 18,
+  },
+  decorIcon: {
+    fontSize: 24,
+  },
+
+  // Summary bar
+  summaryBar: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  summaryItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  summaryValue: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: GARDEN_GREEN,
+  },
+  summaryLabel: {
+    fontSize: 11,
+    color: '#888',
+    marginTop: 2,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 36,
+    backgroundColor: '#E0EDE4',
+  },
+
+  // Section
+  section: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: LEAF_GREEN,
+    marginBottom: 2,
+  },
+  sectionHint: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 14,
+  },
+
+  // Grid card
+  gridCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#F0F7F2',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: '#D6EAD9',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  gridCardLeft: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  gridCardEmoji: {
+    fontSize: 28,
+  },
+  gridCardBody: {
+    flex: 1,
+  },
+  gridCardName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: LEAF_GREEN,
+  },
+  gridCardDescription: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
+  gridCardMeta: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 6,
+  },
+  gridCardMetaText: {
+    fontSize: 11,
+    color: GARDEN_GREEN,
+    fontWeight: '500',
+  },
+  gridCardChevron: {
+    fontSize: 26,
+    color: GARDEN_GREEN,
+    fontWeight: '300',
+    marginLeft: 8,
+  },
+
+  // Footer
+  soilBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 28,
+    paddingTop: 16,
+    borderTopWidth: 3,
+    borderTopColor: SOIL_BROWN,
+    marginHorizontal: 16,
+  },
+  soilEmoji: {
+    fontSize: 20,
   },
 });
