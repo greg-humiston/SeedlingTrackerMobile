@@ -2,12 +2,11 @@
  * GridPreview
  *
  * Interactive 2-D grid renderer shared between the grid-creation screen and
- * the read-only garden detail screen.
+ * the garden detail screen.
  *
- * - In creation mode: pass `cellRefs` and `onDragEnd` to enable drag-and-drop
- *   rearrangement via `DraggableCell`.
- * - In read-only mode: omit `cellRefs` / `onDragEnd`; cells still render with
- *   the same visual but gestures are no-ops.
+ * - canEdit={true} (default): drag-and-drop is active; pass `cellRefs` and
+ *   `onDragEnd` so the parent can update cell order on drop.
+ * - canEdit={false}: gestures are disabled and cells render as static views.
  *
  * The `cells` prop accepts any object with `name`, `emoji`, and `stage` fields
  * so it works with both `SeedlingDraft` (daysOld: string) from the creation
@@ -73,16 +72,18 @@ function EmptyCell({
 type DraggableCellProps = {
   index: number;
   cell: CellData;
+  canEdit: boolean;
   cellRefs: React.MutableRefObject<CellRef[]>;
   onDragEnd: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
 };
 
-function DraggableCell({ index, cell, cellRefs, onDragEnd }: DraggableCellProps) {
+function DraggableCell({ index, cell, canEdit, cellRefs, onDragEnd }: DraggableCellProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale      = useSharedValue(1);
 
   const pan = Gesture.Pan()
+    .enabled(canEdit)
     .onBegin(() => {
       scale.value = withSpring(1.1);
     })
@@ -139,13 +140,19 @@ export type GridPreviewProps = {
   /** Flat cells array (length === rows * cols). null = empty cell. */
   cells: (CellData | null)[];
   /**
+   * Whether drag-and-drop rearrangement is enabled.
+   * Defaults to true. Set to false for read-only display.
+   */
+  canEdit?: boolean;
+  /**
    * Ref array for each cell View, used by the drag handler for screen-space
-   * hit detection. Optional — omit for read-only display.
+   * hit detection. Required when canEdit is true.
    */
   cellRefs?: React.MutableRefObject<CellRef[]>;
   /**
-   * Called when a drag gesture ends. Optional — omit for read-only display.
+   * Called when a drag gesture ends.
    * Signature: (fromIndex, absoluteX, absoluteY) => void
+   * Required when canEdit is true.
    */
   onDragEnd?: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
 };
@@ -154,6 +161,7 @@ export default function GridPreview({
   rows,
   cols,
   cells,
+  canEdit = true,
   cellRefs: externalCellRefs,
   onDragEnd,
 }: GridPreviewProps) {
@@ -162,7 +170,7 @@ export default function GridPreview({
   const internalCellRefs = useRef<CellRef[]>([]);
   const cellRefs = externalCellRefs ?? internalCellRefs;
 
-  // No-op drag handler for read-only mode.
+  // No-op drag handler used when canEdit is false or onDragEnd is not provided.
   const noop = (_fromIndex: number, _x: number, _y: number) => {};
   const dragEnd = onDragEnd ?? noop;
 
@@ -170,7 +178,7 @@ export default function GridPreview({
     <ThemedView style={styles.section}>
       <ThemedText style={styles.sectionTitle}>🗺 Grid Preview</ThemedText>
       <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
-        {onDragEnd ? 'Drag seedlings to rearrange' : 'Seedling positions'}
+        {canEdit ? 'Drag seedlings to rearrange' : 'Seedling positions'}
       </ThemedText>
       <ScrollView
         horizontal
@@ -191,6 +199,7 @@ export default function GridPreview({
                     key={`${idx}-${cell.name}`}
                     index={idx}
                     cell={cell}
+                    canEdit={canEdit}
                     cellRefs={cellRefs}
                     onDragEnd={dragEnd}
                   />

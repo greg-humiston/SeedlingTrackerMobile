@@ -74,6 +74,7 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
           rows={grid.rows}
           cols={grid.cols}
           cells={grid.gridCells}
+          canEdit={false}
         />
       </ThemedView>
 
