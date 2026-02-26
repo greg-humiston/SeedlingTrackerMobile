@@ -1,33 +1,32 @@
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import {
+  GARDEN_GREEN, PETAL_YELLOW, WATER_BLUE,
+} from '@/data/home';
+import { useCreateGrid } from '@/hooks/useGrids';
+import { styles } from '@/styles/create-grid';
+import type { Seedling, SeedlingGrid } from '@/types/home';
+import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-  Alert,
   ActivityIndicator,
+  Alert,
   ScrollView,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import {
+  Gesture,
+  GestureDetector,
   GestureHandlerRootView,
-  PanGestureHandler,
-  type PanGestureHandlerGestureEvent,
 } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
-  useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import type { Seedling, SeedlingGrid } from '@/types/home';
-import {
-  GARDEN_GREEN, PETAL_YELLOW, WATER_BLUE,
-} from '@/data/home';
-import { useCreateGrid } from '@/hooks/useGrids';
-import { styles } from '@/styles/create-grid';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -238,21 +237,20 @@ function DraggableCell({
   const translateY = useSharedValue(0);
   const scale      = useSharedValue(1);
 
-  const gestureHandler = useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
-    onStart: () => {
+  const pan = Gesture.Pan()
+    .onBegin(() => {
       scale.value = withSpring(1.1);
-    },
-    onActive: (event) => {
+    })
+    .onUpdate((event) => {
       translateX.value = event.translationX;
       translateY.value = event.translationY;
-    },
-    onEnd: (event) => {
+    })
+    .onEnd((event) => {
       scale.value      = withSpring(1);
       translateX.value = withSpring(0);
       translateY.value = withSpring(0);
       runOnJS(onDragEnd)(index, event.absoluteX, event.absoluteY + scrollOffsetY.current);
-    },
-  });
+    });
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -269,7 +267,7 @@ function DraggableCell({
   }));
 
   return (
-    <PanGestureHandler onGestureEvent={gestureHandler}>
+    <GestureDetector gesture={pan}>
       <Animated.View
         style={[styles.cell, styles.cellOccupied, animatedStyle]}
         onLayout={(e) => {
@@ -286,7 +284,7 @@ function DraggableCell({
           </ThemedText>
         </View>
       </Animated.View>
-    </PanGestureHandler>
+    </GestureDetector>
   );
 }
 
@@ -495,7 +493,7 @@ export default function GridBuilderScreen() {
         {/* Header */}
         <View style={styles.headerBanner}>
           <ThemedText style={styles.headerLabel}>New Garden</ThemedText>
-          <ThemedText style={styles.headerTitle}>🪴 Build Your Grid</ThemedText>
+          <ThemedText style={styles.headerTitle}>🪴 Build Your Seedling Grid</ThemedText>
           <ThemedText style={styles.headerSubtitle}>
             Set your grid size, add seedlings, and drag them into position.
           </ThemedText>
