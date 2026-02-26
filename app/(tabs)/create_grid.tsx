@@ -219,6 +219,61 @@ function EmptyCell({
   );
 }
 
+// ── GridPreview ────────────────────────────────────────────────────────────────
+
+type GridPreviewProps = {
+  rows: number;
+  cols: number;
+  cells: (SeedlingDraft | null)[];
+  cellRefs: React.MutableRefObject<(CellRef)[]>;
+  onDragEnd: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
+};
+
+function GridPreview({ rows, cols, cells, cellRefs, onDragEnd }: GridPreviewProps) {
+  return (
+    <ThemedView style={styles.section}>
+      <ThemedText style={styles.sectionTitle}>🗺 Grid Preview</ThemedText>
+      <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
+        Drag seedlings to rearrange
+      </ThemedText>
+      <ScrollView
+        horizontal
+        contentContainerStyle={[
+          styles.gridScrollContent,
+          { width: cols * (CELL_SIZE + CELL_GAP) + CELL_GAP },
+        ]}
+        showsHorizontalScrollIndicator={false}
+      >
+        <View>
+          {Array.from({ length: rows }).map((_, r) => (
+            <View key={r} style={styles.gridRow}>
+              {Array.from({ length: cols }).map((_, c) => {
+                const idx      = r * cols + c;
+                const seedling = cells[idx];
+                return seedling ? (
+                  <DraggableCell
+                    key={`${idx}-${seedling.name}`}
+                    index={idx}
+                    seedling={seedling}
+                    cellRefs={cellRefs}
+                    onDragEnd={onDragEnd}
+                  />
+                ) : (
+                  <EmptyCell
+                    key={idx}
+                    index={idx}
+                    cellRefs={cellRefs}
+                  />
+                );
+              })}
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
 // ── DraggableCell ──────────────────────────────────────────────────────────────
 
 type DraggableCellProps = {
@@ -523,70 +578,6 @@ export default function GridBuilderScreen() {
           <EmojiSelector selected={gridEmoji} onSelect={setGridEmoji} />
         </ThemedView>
 
-        {/* Grid Size */}
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>📐 Grid Size</ThemedText>
-          <GridSizeControl
-            label="Columns"
-            value={cols}
-            onIncrement={handleIncrementCols}
-            onDecrement={handleDecrementCols}
-            decrementDisabled={!canDecrementCols}
-          />
-          <GridSizeControl
-            label="Rows"
-            value={rows}
-            onIncrement={handleIncrementRows}
-            onDecrement={handleDecrementRows}
-            decrementDisabled={!canDecrementRows}
-          />
-          <ThemedText style={styles.cellCountHint}>
-            {totalCells} cells · {seedlingCount} filled · {totalCells - seedlingCount} empty
-          </ThemedText>
-        </ThemedView>
-
-        {/* Grid Preview */}
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>🗺 Grid Preview</ThemedText>
-          <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
-            Drag seedlings to rearrange
-          </ThemedText>
-          <ScrollView
-            horizontal
-            contentContainerStyle={[
-              styles.gridScrollContent,
-              { width: cols * (CELL_SIZE + CELL_GAP) + CELL_GAP },
-            ]}
-            showsHorizontalScrollIndicator={false}
-          >
-            <View>
-              {Array.from({ length: rows }).map((_, r) => (
-                <View key={r} style={styles.gridRow}>
-                  {Array.from({ length: cols }).map((_, c) => {
-                    const idx      = r * cols + c;
-                    const seedling = cells[idx];
-                    return seedling ? (
-                      <DraggableCell
-                        key={`${idx}-${seedling.name}`}
-                        index={idx}
-                        seedling={seedling}
-                        cellRefs={cellRefs}
-                        onDragEnd={handleDragEnd}
-                      />
-                    ) : (
-                      <EmptyCell
-                        key={idx}
-                        index={idx}
-                        cellRefs={cellRefs}
-                      />
-                    );
-                  })}
-                </View>
-              ))}
-            </View>
-          </ScrollView>
-        </ThemedView>
-
         {/* Add Seedling */}
         <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>🌱 Add a Seedling</ThemedText>
@@ -622,6 +613,37 @@ export default function GridBuilderScreen() {
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
+
+        {/* Grid Size */}
+        <ThemedView style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>📐 Grid Size</ThemedText>
+          <GridSizeControl
+            label="Columns"
+            value={cols}
+            onIncrement={handleIncrementCols}
+            onDecrement={handleDecrementCols}
+            decrementDisabled={!canDecrementCols}
+          />
+          <GridSizeControl
+            label="Rows"
+            value={rows}
+            onIncrement={handleIncrementRows}
+            onDecrement={handleDecrementRows}
+            decrementDisabled={!canDecrementRows}
+          />
+          <ThemedText style={styles.cellCountHint}>
+            {totalCells} cells · {seedlingCount} filled · {totalCells - seedlingCount} empty
+          </ThemedText>
+        </ThemedView>
+
+        {/* Grid Preview */}
+        <GridPreview
+          rows={rows}
+          cols={cols}
+          cells={cells}
+          cellRefs={cellRefs}
+          onDragEnd={handleDragEnd}
+        />
 
         {/* Validation Checklist */}
         <ThemedView style={styles.checklistCard}>
