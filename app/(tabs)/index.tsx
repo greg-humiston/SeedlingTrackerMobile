@@ -4,6 +4,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import type { SeedlingGrid } from '@/types/home';
 import { GARDEN_GREEN } from '@/data/home';
+import {
+  DECOR_ICONS_HOME,
+  EMOJI_HERB,
+  EMOJI_SEEDLING,
+  EMOJI_WATER,
+  FOOTER_SOIL,
+} from '@/constants/icons';
 import { styles } from '@/styles/home';
 import { useGrids } from '@/hooks/useGrids';
 
@@ -24,10 +31,10 @@ function GridCard({ name, emoji, description, seedlings, stats, onPress }: GridC
         <ThemedText style={styles.gridCardDescription}>{description}</ThemedText>
         <View style={styles.gridCardMeta}>
           <ThemedText style={styles.gridCardMetaText}>
-            🌱 {seedlings.length} seedlings
+            {EMOJI_SEEDLING} {seedlings.length} seedlings
           </ThemedText>
           <ThemedText style={styles.gridCardMetaText}>
-            💧 {stats.find(s => s.label === 'Need Water')?.value ?? '0'} need water
+            {EMOJI_WATER} {stats.find(s => s.label === 'Need Water')?.value ?? '0'} need water
           </ThemedText>
         </View>
       </View>
@@ -53,16 +60,14 @@ export default function HomeScreen() {
       {/* Branding Header */}
       <View style={styles.headerBanner}>
         <ThemedText style={styles.brandingLabel}>Welcome to</ThemedText>
-        <ThemedText style={styles.brandingTitle}>🌱 SeedlingTracker</ThemedText>
+        <ThemedText style={styles.brandingTitle}>{EMOJI_SEEDLING} SeedlingTracker</ThemedText>
         <ThemedText style={styles.brandingSubtitle}>
           Track, nurture, and grow your seedlings with care.
         </ThemedText>
         <View style={styles.decorRow}>
-          <ThemedText style={styles.decorIcon}>🌿</ThemedText>
-          <ThemedText style={styles.decorIcon}>🌸</ThemedText>
-          <ThemedText style={styles.decorIcon}>🍃</ThemedText>
-          <ThemedText style={styles.decorIcon}>🌻</ThemedText>
-          <ThemedText style={styles.decorIcon}>🌿</ThemedText>
+          {DECOR_ICONS_HOME.map((icon, i) => (
+            <ThemedText key={i} style={styles.decorIcon}>{icon}</ThemedText>
+          ))}
         </View>
       </View>
 
@@ -86,7 +91,7 @@ export default function HomeScreen() {
 
       {/* Grid List */}
       <ThemedView style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>🌿 My Gardens</ThemedText>
+        <ThemedText style={styles.sectionTitle}>{EMOJI_HERB} My Gardens</ThemedText>
         <ThemedText style={styles.sectionHint}>Tap a garden to view its seedlings</ThemedText>
 
         {isLoading && (
@@ -117,11 +122,9 @@ export default function HomeScreen() {
 
       {/* Footer decoration */}
       <View style={styles.soilBar}>
-        <ThemedText style={styles.soilEmoji}>🪨</ThemedText>
-        <ThemedText style={styles.soilEmoji}>🌱</ThemedText>
-        <ThemedText style={styles.soilEmoji}>🪱</ThemedText>
-        <ThemedText style={styles.soilEmoji}>🌱</ThemedText>
-        <ThemedText style={styles.soilEmoji}>🪨</ThemedText>
+        {FOOTER_SOIL.map((icon, i) => (
+          <ThemedText key={i} style={styles.soilEmoji}>{icon}</ThemedText>
+        ))}
       </View>
     </ScrollView>
   );

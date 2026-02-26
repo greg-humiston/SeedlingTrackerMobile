@@ -15,6 +15,7 @@
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { EMOJI_MAP } from '@/constants/icons';
 import { styles } from '@/styles/create-grid';
 import { useRef } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -176,7 +177,7 @@ export default function GridPreview({
 
   return (
     <ThemedView style={styles.section}>
-      <ThemedText style={styles.sectionTitle}>🗺 Grid Preview</ThemedText>
+      <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Grid Preview</ThemedText>
       <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
         {canEdit ? 'Drag seedlings to rearrange' : 'Seedling positions'}
       </ThemedText>

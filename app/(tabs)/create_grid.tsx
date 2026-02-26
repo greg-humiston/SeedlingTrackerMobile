@@ -2,6 +2,18 @@ import GridPreview, { CellRef } from '@/components/GridPreview';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
+  DECOR_ICONS_DEFAULT,
+  EMOJI_CHART,
+  EMOJI_FLOWER_PINK,
+  EMOJI_HERB,
+  EMOJI_OPTIONS,
+  EMOJI_POT,
+  EMOJI_SEEDLING,
+  EMOJI_SUN,
+  EMOJI_WATER,
+  FOOTER_SOIL,
+} from '@/constants/icons';
+import {
   GARDEN_GREEN, PETAL_YELLOW, WATER_BLUE,
 } from '@/data/home';
 import { useCreateGrid } from '@/hooks/useGrids';
@@ -31,11 +43,6 @@ const STAGE_OPTIONS: Seedling['stage'][] = [
   'Established',
 ];
 
-const EMOJI_OPTIONS = [
-  '🌱', '🌿', '🍃', '🍅', '🌻', '💜',
-  '🌸', '🌼', '🌺', '🥬', '🌽', '🥕',
-];
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type SeedlingDraft = Omit<Seedling, 'daysOld'> & { daysOld: string };
@@ -44,7 +51,7 @@ const EMPTY_SEEDLING: SeedlingDraft = {
   name: '',
   stage: 'Germinating',
   daysOld: '',
-  emoji: '🌱',
+  emoji: EMOJI_SEEDLING,
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -201,7 +208,7 @@ export default function GridBuilderScreen() {
   // Garden form
   const [gridName, setGridName]               = useState('');
   const [gridDescription, setGridDescription] = useState('');
-  const [gridEmoji, setGridEmoji]             = useState('🌱');
+  const [gridEmoji, setGridEmoji]             = useState(EMOJI_SEEDLING);
   const [submitted, setSubmitted]             = useState(false);
 
   // Seedling draft
@@ -359,19 +366,19 @@ export default function GridBuilderScreen() {
         greeting:        'Good morning,',
         title:           `${gridEmoji} ${gridName.trim()}`,
         subtitle:        `Your ${gridName.trim()} is growing beautifully!`,
-        decorativeIcons: ['🌿', '🌱', '🌿', '🍃', '🌱', '🌿'],
+        decorativeIcons: DECOR_ICONS_DEFAULT,
       },
       stats: [
-        { emoji: '🌱', label: 'Seedlings', value: String(filledSeedlings.length), color: GARDEN_GREEN },
-        { emoji: '💧', label: 'Need Water', value: '0',                           color: WATER_BLUE   },
-        { emoji: '☀️', label: 'Days Active', value: '0',                          color: PETAL_YELLOW },
+        { emoji: EMOJI_SEEDLING, label: 'Seedlings',   value: String(filledSeedlings.length), color: GARDEN_GREEN },
+        { emoji: EMOJI_WATER,    label: 'Need Water',  value: '0',                             color: WATER_BLUE   },
+        { emoji: EMOJI_SUN,      label: 'Days Active', value: '0',                             color: PETAL_YELLOW },
       ],
       seedlings: filledSeedlings,
       tip: {
-        title: '🌸 Garden Tip of the Day',
+        title: `${EMOJI_FLOWER_PINK} Garden Tip of the Day`,
         text:  'Water your seedlings in the early morning to reduce evaporation and prevent fungal growth.',
       },
-      footerIcons: ['🪨', '🌱', '🪱', '🌱', '🪨'],
+      footerIcons: FOOTER_SOIL,
       cols,
       rows,
       gridCells,
@@ -381,7 +388,7 @@ export default function GridBuilderScreen() {
       onSuccess: (created) => {
         setGridName('');
         setGridDescription('');
-        setGridEmoji('🌱');
+        setGridEmoji(EMOJI_SEEDLING);
         setSubmitted(false);
         setDraft(EMPTY_SEEDLING);
         setCols(DEFAULT_COLS);
@@ -407,7 +414,7 @@ export default function GridBuilderScreen() {
         {/* Header */}
         <View style={styles.headerBanner}>
           <ThemedText style={styles.headerLabel}>New Garden</ThemedText>
-          <ThemedText style={styles.headerTitle}>🪴 Build Your Seedling Grid</ThemedText>
+          <ThemedText style={styles.headerTitle}>{EMOJI_POT} Build Your Seedling Grid</ThemedText>
           <ThemedText style={styles.headerSubtitle}>
             Set your grid size, add seedlings, and drag them into position.
           </ThemedText>
@@ -415,7 +422,7 @@ export default function GridBuilderScreen() {
 
         {/* Garden Details */}
         <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>🌿 Garden Details</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{EMOJI_HERB} Garden Details</ThemedText>
           <LabeledInput
             label="Garden Name"
             value={gridName}
@@ -437,7 +444,7 @@ export default function GridBuilderScreen() {
 
         {/* Add Seedling */}
         <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>🌱 Add a Seedling</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{EMOJI_SEEDLING} Add a Seedling</ThemedText>
           <LabeledInput
             label="Seedling Name"
             value={draft.name}
@@ -473,7 +480,7 @@ export default function GridBuilderScreen() {
 
         {/* Grid Size */}
         <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>📐 Grid Size</ThemedText>
+          <ThemedText style={styles.sectionTitle}>{EMOJI_CHART} Grid Size</ThemedText>
           <GridSizeControl
             label="Columns"
             value={cols}
@@ -521,14 +528,14 @@ export default function GridBuilderScreen() {
             <ActivityIndicator color="#FFFFFF" />
           ) : (
             <ThemedText style={[styles.createButtonText, (submitted && !canCreate) && styles.createButtonTextDisabled]}>
-              🌱 Create Garden
+              {EMOJI_SEEDLING} Create Garden
             </ThemedText>
           )}
         </TouchableOpacity>
 
         {/* Footer */}
         <View style={styles.soilBar}>
-          {['🪨', '🌱', '🪱', '🌱', '🪨'].map((icon, i) => (
+          {FOOTER_SOIL.map((icon, i) => (
             <ThemedText key={i} style={styles.soilEmoji}>{icon}</ThemedText>
           ))}
         </View>

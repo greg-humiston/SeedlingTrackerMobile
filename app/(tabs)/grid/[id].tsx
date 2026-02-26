@@ -8,6 +8,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import GridPreview from '@/components/GridPreview';
+import { EMOJI_MAP, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
 import { useGrid } from '@/hooks/useGrids';
 import { styles } from '@/styles/grid-detail';
@@ -51,7 +52,7 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
 
       {/* Stats Row */}
       <ThemedView style={styles.statsContainer}>
-        <ThemedText style={styles.sectionTitle}>📊 Garden Overview</ThemedText>
+        <ThemedText style={styles.sectionTitle}>{EMOJI_OVERVIEW} Garden Overview</ThemedText>
         <View style={styles.statsRow}>
           {grid.stats.map((stat) => (
             <StatCard key={stat.label} {...stat} />
@@ -61,7 +62,7 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
 
       {/* 2-D Grid Preview */}
       <ThemedView style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>🗺 Seedling Grid</ThemedText>
+        <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Seedling Grid</ThemedText>
         <ThemedText style={styles.sectionHint}>
           {grid.cols} col{grid.cols !== 1 ? 's' : ''} ×{' '}
           {grid.rows} row{grid.rows !== 1 ? 's' : ''} ·{' '}

@@ -1,3 +1,23 @@
+import {
+  DECOR_ICONS_DEFAULT,
+  EMOJI_CARROT,
+  EMOJI_CORN,
+  EMOJI_FLOWER_PINK,
+  EMOJI_FLOWER_RED,
+  EMOJI_FLOWER_YELLOW,
+  EMOJI_HERB,
+  EMOJI_LAVENDER,
+  EMOJI_LEAF,
+  EMOJI_LEAFY,
+  EMOJI_ROCK,
+  EMOJI_SEEDLING,
+  EMOJI_SUNFLOWER,
+  EMOJI_TOMATO,
+  EMOJI_WATER,
+  EMOJI_WORM,
+  EMOJI_SUN,
+  FOOTER_SOIL,
+} from '@/constants/icons';
 import type { Header, Seedling, SeedlingGrid, Stat, Tip } from '@/types/home';
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
@@ -12,154 +32,157 @@ export const WATER_BLUE = '#3A86FF';
 // ─── Header Content ───────────────────────────────────────────────────────────
 export const HEADER: Header = {
   greeting: 'Good morning,',
-  title: '🌱 My Garden',
+  title: `${EMOJI_SEEDLING} My Garden`,
   subtitle: 'Your seedlings are growing beautifully!',
-  decorativeIcons: ['🌿', '🌱', '🌿', '🍃', '🌱', '🌿'],
+  decorativeIcons: DECOR_ICONS_DEFAULT,
 };
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 export const STATS: Stat[] = [
-  { emoji: '🌱', label: 'Seedlings', value: '12', color: GARDEN_GREEN },
-  { emoji: '💧', label: 'Need Water', value: '3', color: WATER_BLUE },
-  { emoji: '☀️', label: 'Days Active', value: '24', color: PETAL_YELLOW },
+  { emoji: EMOJI_SEEDLING, label: 'Seedlings',   value: '12', color: GARDEN_GREEN },
+  { emoji: EMOJI_WATER,    label: 'Need Water',  value: '3',  color: WATER_BLUE   },
+  { emoji: EMOJI_SUN,      label: 'Days Active', value: '24', color: PETAL_YELLOW },
 ];
 
 // ─── Seedlings ────────────────────────────────────────────────────────────────
 export const SEEDLINGS: Seedling[] = [
-  { name: 'Cherry Tomato', stage: 'Germinating', daysOld: 5, emoji: '🍅' },
-  { name: 'Sweet Basil', stage: 'First Leaves', daysOld: 12, emoji: '🌿' },
-  { name: 'Sunflower', stage: 'Sprouting', daysOld: 3, emoji: '🌻' },
-  { name: 'Lavender', stage: 'Established', daysOld: 30, emoji: '💜' },
-  { name: 'Mint', stage: 'First Leaves', daysOld: 8, emoji: '🌱' },
-  { name: 'Rosemary', stage: 'Germinating', daysOld: 2, emoji: '🌿' },
+  { name: 'Cherry Tomato', stage: 'Germinating',  daysOld: 5,  emoji: EMOJI_TOMATO   },
+  { name: 'Sweet Basil',   stage: 'First Leaves', daysOld: 12, emoji: EMOJI_HERB     },
+  { name: 'Sunflower',     stage: 'Sprouting',    daysOld: 3,  emoji: EMOJI_SUNFLOWER },
+  { name: 'Lavender',      stage: 'Established',  daysOld: 30, emoji: EMOJI_LAVENDER  },
+  { name: 'Mint',          stage: 'First Leaves', daysOld: 8,  emoji: EMOJI_SEEDLING  },
+  { name: 'Rosemary',      stage: 'Germinating',  daysOld: 2,  emoji: EMOJI_HERB     },
 ];
 
 // ─── Tip of the Day ───────────────────────────────────────────────────────────
 export const TIP: Tip = {
-  title: '🌸 Garden Tip of the Day',
+  title: `${EMOJI_FLOWER_PINK} Garden Tip of the Day`,
   text: 'Water your seedlings in the early morning to reduce evaporation and prevent fungal growth. Keep the soil moist but never waterlogged!',
 };
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
-export const FOOTER_ICONS: string[] = ['🪨', '🌱', '🪱', '🌱', '🪨'];
+export const FOOTER_ICONS: string[] = FOOTER_SOIL;
 
 // ─── Seedling Grids ───────────────────────────────────────────────────────────
 export const SEEDLING_GRIDS: SeedlingGrid[] = [
   {
     id: 'herb-garden',
     name: 'Herb Garden',
-    emoji: '🌿',
+    emoji: EMOJI_HERB,
     description: 'Kitchen herbs and aromatics',
     header: {
       greeting: 'Good morning,',
-      title: '🌿 Herb Garden',
+      title: `${EMOJI_HERB} Herb Garden`,
       subtitle: 'Your herbs are thriving!',
-      decorativeIcons: ['🌿', '🌱', '🌿', '🍃', '🌱', '🌿'],
+      decorativeIcons: DECOR_ICONS_DEFAULT,
     },
     stats: [
-      { emoji: '🌱', label: 'Seedlings', value: '6', color: GARDEN_GREEN },
-      { emoji: '💧', label: 'Need Water', value: '2', color: WATER_BLUE },
-      { emoji: '☀️', label: 'Days Active', value: '14', color: PETAL_YELLOW },
+      { emoji: EMOJI_SEEDLING, label: 'Seedlings',   value: '6',  color: GARDEN_GREEN },
+      { emoji: EMOJI_WATER,    label: 'Need Water',  value: '2',  color: WATER_BLUE   },
+      { emoji: EMOJI_SUN,      label: 'Days Active', value: '14', color: PETAL_YELLOW },
     ],
     seedlings: [
-      { name: 'Sweet Basil', stage: 'First Leaves', daysOld: 12, emoji: '🌿' },
-      { name: 'Mint', stage: 'First Leaves', daysOld: 8, emoji: '🌱' },
-      { name: 'Rosemary', stage: 'Germinating', daysOld: 2, emoji: '🌿' },
-      { name: 'Thyme', stage: 'Sprouting', daysOld: 6, emoji: '🍃' },
-      { name: 'Parsley', stage: 'Germinating', daysOld: 3, emoji: '🌱' },
-      { name: 'Chives', stage: 'Established', daysOld: 21, emoji: '🌿' },
+      { name: 'Sweet Basil', stage: 'First Leaves', daysOld: 12, emoji: EMOJI_HERB     },
+      { name: 'Mint',        stage: 'First Leaves', daysOld: 8,  emoji: EMOJI_SEEDLING  },
+      { name: 'Rosemary',    stage: 'Germinating',  daysOld: 2,  emoji: EMOJI_HERB     },
+      { name: 'Thyme',       stage: 'Sprouting',    daysOld: 6,  emoji: EMOJI_LEAF     },
+      { name: 'Parsley',     stage: 'Germinating',  daysOld: 3,  emoji: EMOJI_SEEDLING  },
+      { name: 'Chives',      stage: 'Established',  daysOld: 21, emoji: EMOJI_HERB     },
     ],
     tip: {
-      title: '🌸 Herb Garden Tip',
+      title: `${EMOJI_FLOWER_PINK} Herb Garden Tip`,
       text: 'Pinch off flower buds on basil to keep leaves growing strong and prevent the plant from going to seed too early.',
     },
-    footerIcons: ['🪨', '🌱', '🪱', '🌱', '🪨'],
+    footerIcons: FOOTER_SOIL,
     // 3 × 2 layout — all 6 cells filled
     cols: 3,
     rows: 2,
     gridCells: [
-      { name: 'Sweet Basil', stage: 'First Leaves', daysOld: 12, emoji: '🌿' },
-      { name: 'Mint', stage: 'First Leaves', daysOld: 8, emoji: '🌱' },
-      { name: 'Rosemary', stage: 'Germinating', daysOld: 2, emoji: '🌿' },
-      { name: 'Thyme', stage: 'Sprouting', daysOld: 6, emoji: '🍃' },
-      { name: 'Parsley', stage: 'Germinating', daysOld: 3, emoji: '🌱' },
-      { name: 'Chives', stage: 'Established', daysOld: 21, emoji: '🌿' },
+      { name: 'Sweet Basil', stage: 'First Leaves', daysOld: 12, emoji: EMOJI_HERB     },
+      { name: 'Mint',        stage: 'First Leaves', daysOld: 8,  emoji: EMOJI_SEEDLING  },
+      { name: 'Rosemary',    stage: 'Germinating',  daysOld: 2,  emoji: EMOJI_HERB     },
+      { name: 'Thyme',       stage: 'Sprouting',    daysOld: 6,  emoji: EMOJI_LEAF     },
+      { name: 'Parsley',     stage: 'Germinating',  daysOld: 3,  emoji: EMOJI_SEEDLING  },
+      { name: 'Chives',      stage: 'Established',  daysOld: 21, emoji: EMOJI_HERB     },
     ],
   },
   {
     id: 'veggie-patch',
     name: 'Veggie Patch',
-    emoji: '🍅',
+    emoji: EMOJI_TOMATO,
     description: 'Tomatoes, greens and more',
     header: {
       greeting: 'Good morning,',
-      title: '🍅 Veggie Patch',
+      title: `${EMOJI_TOMATO} Veggie Patch`,
       subtitle: 'Your vegetables are growing beautifully!',
-      decorativeIcons: ['🍅', '🥬', '🌽', '🥕', '🍅', '🥬'],
+      decorativeIcons: [EMOJI_TOMATO, EMOJI_LEAFY, EMOJI_CORN, EMOJI_CARROT, EMOJI_TOMATO, EMOJI_LEAFY],
     },
     stats: [
-      { emoji: '🌱', label: 'Seedlings', value: '4', color: GARDEN_GREEN },
-      { emoji: '💧', label: 'Need Water', value: '1', color: WATER_BLUE },
-      { emoji: '☀️', label: 'Days Active', value: '30', color: PETAL_YELLOW },
+      { emoji: EMOJI_SEEDLING, label: 'Seedlings',   value: '4',  color: GARDEN_GREEN },
+      { emoji: EMOJI_WATER,    label: 'Need Water',  value: '1',  color: WATER_BLUE   },
+      { emoji: EMOJI_SUN,      label: 'Days Active', value: '30', color: PETAL_YELLOW },
     ],
     seedlings: [
-      { name: 'Cherry Tomato', stage: 'Germinating', daysOld: 5, emoji: '🍅' },
-      { name: 'Sunflower', stage: 'Sprouting', daysOld: 3, emoji: '🌻' },
-      { name: 'Zucchini', stage: 'First Leaves', daysOld: 9, emoji: '🥬' },
-      { name: 'Kale', stage: 'Established', daysOld: 25, emoji: '🥬' },
+      { name: 'Cherry Tomato', stage: 'Germinating',  daysOld: 5,  emoji: EMOJI_TOMATO    },
+      { name: 'Sunflower',     stage: 'Sprouting',    daysOld: 3,  emoji: EMOJI_SUNFLOWER  },
+      { name: 'Zucchini',      stage: 'First Leaves', daysOld: 9,  emoji: EMOJI_LEAFY      },
+      { name: 'Kale',          stage: 'Established',  daysOld: 25, emoji: EMOJI_LEAFY      },
     ],
     tip: {
-      title: '🌸 Veggie Patch Tip',
+      title: `${EMOJI_FLOWER_PINK} Veggie Patch Tip`,
       text: 'Rotate your vegetable crops each season to prevent soil depletion and reduce the build-up of pests and diseases.',
     },
-    footerIcons: ['🪨', '🍅', '🪱', '🌽', '🪨'],
+    footerIcons: [EMOJI_ROCK, EMOJI_TOMATO, EMOJI_WORM, EMOJI_CORN, EMOJI_ROCK],
     // 2 × 2 layout — all 4 cells filled
     cols: 2,
     rows: 2,
     gridCells: [
-      { name: 'Cherry Tomato', stage: 'Germinating', daysOld: 5, emoji: '🍅' },
-      { name: 'Sunflower', stage: 'Sprouting', daysOld: 3, emoji: '🌻' },
-      { name: 'Zucchini', stage: 'First Leaves', daysOld: 9, emoji: '🥬' },
-      { name: 'Kale', stage: 'Established', daysOld: 25, emoji: '🥬' },
+      { name: 'Cherry Tomato', stage: 'Germinating',  daysOld: 5,  emoji: EMOJI_TOMATO    },
+      { name: 'Sunflower',     stage: 'Sprouting',    daysOld: 3,  emoji: EMOJI_SUNFLOWER  },
+      { name: 'Zucchini',      stage: 'First Leaves', daysOld: 9,  emoji: EMOJI_LEAFY      },
+      { name: 'Kale',          stage: 'Established',  daysOld: 25, emoji: EMOJI_LEAFY      },
     ],
   },
   {
     id: 'flower-bed',
     name: 'Flower Bed',
-    emoji: '🌸',
+    emoji: EMOJI_FLOWER_PINK,
     description: 'Blooms and ornamental plants',
     header: {
       greeting: 'Good morning,',
-      title: '🌸 Flower Bed',
+      title: `${EMOJI_FLOWER_PINK} Flower Bed`,
       subtitle: 'Your flowers are blooming!',
-      decorativeIcons: ['🌸', '🌼', '🌺', '💐', '🌸', '🌼'],
+      decorativeIcons: [
+        EMOJI_FLOWER_PINK, EMOJI_FLOWER_YELLOW, EMOJI_FLOWER_RED,
+        EMOJI_FLOWER_PINK, EMOJI_FLOWER_PINK, EMOJI_FLOWER_YELLOW,
+      ],
     },
     stats: [
-      { emoji: '🌱', label: 'Seedlings', value: '5', color: GARDEN_GREEN },
-      { emoji: '💧', label: 'Need Water', value: '3', color: WATER_BLUE },
-      { emoji: '☀️', label: 'Days Active', value: '20', color: PETAL_YELLOW },
+      { emoji: EMOJI_SEEDLING,    label: 'Seedlings',   value: '5',  color: GARDEN_GREEN },
+      { emoji: EMOJI_WATER,       label: 'Need Water',  value: '3',  color: WATER_BLUE   },
+      { emoji: EMOJI_SUN,         label: 'Days Active', value: '20', color: PETAL_YELLOW },
     ],
     seedlings: [
-      { name: 'Lavender', stage: 'Established', daysOld: 30, emoji: '💜' },
-      { name: 'Marigold', stage: 'Sprouting', daysOld: 7, emoji: '🌼' },
-      { name: 'Petunia', stage: 'First Leaves', daysOld: 11, emoji: '🌸' },
-      { name: 'Cosmos', stage: 'Germinating', daysOld: 4, emoji: '🌺' },
-      { name: 'Zinnia', stage: 'Sprouting', daysOld: 8, emoji: '🌻' },
+      { name: 'Lavender', stage: 'Established',  daysOld: 30, emoji: EMOJI_LAVENDER      },
+      { name: 'Marigold', stage: 'Sprouting',    daysOld: 7,  emoji: EMOJI_FLOWER_YELLOW  },
+      { name: 'Petunia',  stage: 'First Leaves', daysOld: 11, emoji: EMOJI_FLOWER_PINK    },
+      { name: 'Cosmos',   stage: 'Germinating',  daysOld: 4,  emoji: EMOJI_FLOWER_RED     },
+      { name: 'Zinnia',   stage: 'Sprouting',    daysOld: 8,  emoji: EMOJI_SUNFLOWER      },
     ],
     tip: {
-      title: '🌸 Flower Bed Tip',
+      title: `${EMOJI_FLOWER_PINK} Flower Bed Tip`,
       text: 'Deadhead spent blooms regularly to encourage your plants to produce more flowers throughout the season.',
     },
-    footerIcons: ['🪨', '🌸', '🪱', '🌼', '🪨'],
+    footerIcons: [EMOJI_ROCK, EMOJI_FLOWER_PINK, EMOJI_WORM, EMOJI_FLOWER_YELLOW, EMOJI_ROCK],
     // 3 × 2 layout — 5 seedlings, last cell empty
     cols: 3,
     rows: 2,
     gridCells: [
-      { name: 'Lavender', stage: 'Established', daysOld: 30, emoji: '💜' },
-      { name: 'Marigold', stage: 'Sprouting', daysOld: 7, emoji: '🌼' },
-      { name: 'Petunia', stage: 'First Leaves', daysOld: 11, emoji: '🌸' },
-      { name: 'Cosmos', stage: 'Germinating', daysOld: 4, emoji: '🌺' },
-      { name: 'Zinnia', stage: 'Sprouting', daysOld: 8, emoji: '🌻' },
+      { name: 'Lavender', stage: 'Established',  daysOld: 30, emoji: EMOJI_LAVENDER      },
+      { name: 'Marigold', stage: 'Sprouting',    daysOld: 7,  emoji: EMOJI_FLOWER_YELLOW  },
+      { name: 'Petunia',  stage: 'First Leaves', daysOld: 11, emoji: EMOJI_FLOWER_PINK    },
+      { name: 'Cosmos',   stage: 'Germinating',  daysOld: 4,  emoji: EMOJI_FLOWER_RED     },
+      { name: 'Zinnia',   stage: 'Sprouting',    daysOld: 8,  emoji: EMOJI_SUNFLOWER      },
       null,
     ],
   },
