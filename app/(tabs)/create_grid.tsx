@@ -1,3 +1,4 @@
+import GridPreview, { CellRef } from '@/components/GridPreview';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
@@ -16,22 +17,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const CELL_SIZE    = 72;
-const CELL_GAP     = 8;   // margin: 4 on each side = 8px gap
 const DEFAULT_COLS = 4;
 const DEFAULT_ROWS = 3;
 
@@ -50,9 +39,6 @@ const EMOJI_OPTIONS = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type SeedlingDraft = Omit<Seedling, 'daysOld'> & { daysOld: string };
-
-// Each cell exposes a ref so the parent can call .measure() for screen-space coords
-type CellRef = { measure: (cb: (fx: number, fy: number, w: number, h: number, px: number, py: number) => void) => void } | null;
 
 const EMPTY_SEEDLING: SeedlingDraft = {
   name: '',
@@ -202,143 +188,6 @@ function GridSizeControl({
   );
 }
 
-// ── EmptyCell ──────────────────────────────────────────────────────────────────
-
-function EmptyCell({
-  index,
-  cellRefs,
-}: {
-  index: number;
-  cellRefs: React.MutableRefObject<(CellRef)[]>;
-}) {
-  return (
-    <View
-      ref={(r) => { cellRefs.current[index] = r as unknown as CellRef; }}
-      style={[styles.cell, styles.cellEmpty]}
-    />
-  );
-}
-
-// ── GridPreview ────────────────────────────────────────────────────────────────
-
-type GridPreviewProps = {
-  rows: number;
-  cols: number;
-  cells: (SeedlingDraft | null)[];
-  cellRefs: React.MutableRefObject<(CellRef)[]>;
-  onDragEnd: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
-};
-
-function GridPreview({ rows, cols, cells, cellRefs, onDragEnd }: GridPreviewProps) {
-  return (
-    <ThemedView style={styles.section}>
-      <ThemedText style={styles.sectionTitle}>🗺 Grid Preview</ThemedText>
-      <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
-        Drag seedlings to rearrange
-      </ThemedText>
-      <ScrollView
-        horizontal
-        contentContainerStyle={[
-          styles.gridScrollContent,
-          { width: cols * (CELL_SIZE + CELL_GAP) + CELL_GAP },
-        ]}
-        showsHorizontalScrollIndicator={false}
-      >
-        <View>
-          {Array.from({ length: rows }).map((_, r) => (
-            <View key={r} style={styles.gridRow}>
-              {Array.from({ length: cols }).map((_, c) => {
-                const idx      = r * cols + c;
-                const seedling = cells[idx];
-                return seedling ? (
-                  <DraggableCell
-                    key={`${idx}-${seedling.name}`}
-                    index={idx}
-                    seedling={seedling}
-                    cellRefs={cellRefs}
-                    onDragEnd={onDragEnd}
-                  />
-                ) : (
-                  <EmptyCell
-                    key={idx}
-                    index={idx}
-                    cellRefs={cellRefs}
-                  />
-                );
-              })}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    </ThemedView>
-  );
-}
-
-// ── DraggableCell ──────────────────────────────────────────────────────────────
-
-type DraggableCellProps = {
-  index: number;
-  seedling: SeedlingDraft;
-  cellRefs: React.MutableRefObject<(CellRef)[]>;
-  onDragEnd: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
-};
-
-function DraggableCell({
-  index, seedling, cellRefs, onDragEnd,
-}: DraggableCellProps) {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const scale      = useSharedValue(1);
-
-  const pan = Gesture.Pan()
-    .onBegin(() => {
-      scale.value = withSpring(1.1);
-    })
-    .onUpdate((event) => {
-      translateX.value = event.translationX;
-      translateY.value = event.translationY;
-    })
-    .onEnd((event) => {
-      scale.value      = withSpring(1);
-      translateX.value = withSpring(0);
-      translateY.value = withSpring(0);
-      runOnJS(onDragEnd)(index, event.absoluteX, event.absoluteY);
-    });
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-    zIndex: scale.value > 1 ? 10 : 1,
-    shadowOpacity: scale.value > 1 ? 0.2 : 0,
-    shadowRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    elevation: scale.value > 1 ? 8 : 0,
-  }));
-
-  return (
-    <GestureDetector gesture={pan}>
-      <Animated.View
-        ref={(r) => { cellRefs.current[index] = r as unknown as CellRef; }}
-        style={[styles.cell, styles.cellOccupied, animatedStyle]}
-      >
-        <ThemedText style={styles.cellEmoji}>{seedling.emoji}</ThemedText>
-        <ThemedText style={styles.cellName} numberOfLines={1}>
-          {seedling.name}
-        </ThemedText>
-        <View style={styles.cellStageBadge}>
-          <ThemedText style={styles.cellStageBadgeText}>
-            {seedling.stage.split(' ')[0]}
-          </ThemedText>
-        </View>
-      </Animated.View>
-    </GestureDetector>
-  );
-}
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function GridBuilderScreen() {
@@ -364,7 +213,7 @@ export default function GridBuilderScreen() {
   );
 
   // Refs to each cell View so we can call .measure() for screen-space hit detection
-  const cellRefs = useRef<(CellRef)[]>([]);
+  const cellRefs = useRef<CellRef[]>([]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const totalCells    = rows * cols;

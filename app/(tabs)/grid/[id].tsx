@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import SeedlingGridPreview from '@/components/SeedlingGridPreview';
+import GridPreview from '@/components/GridPreview';
 import {
   CREAM, GARDEN_GREEN, LEAF_GREEN, LIGHT_GREEN,
   PETAL_YELLOW, SOIL_BROWN,
@@ -70,10 +70,10 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
           {grid.rows} row{grid.rows !== 1 ? 's' : ''} ·{' '}
           {grid.seedlings.length} seedling{grid.seedlings.length !== 1 ? 's' : ''} placed
         </ThemedText>
-        <SeedlingGridPreview
+        <GridPreview
           rows={grid.rows}
           cols={grid.cols}
-          gridCells={grid.gridCells}
+          cells={grid.gridCells}
         />
       </ThemedView>
 
