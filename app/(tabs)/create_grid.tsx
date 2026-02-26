@@ -51,7 +51,8 @@ const EMOJI_OPTIONS = [
 
 type SeedlingDraft = Omit<Seedling, 'daysOld'> & { daysOld: string };
 
-type CellLayout = { x: number; y: number; width: number; height: number };
+// Each cell exposes a ref so the parent can call .measure() for screen-space coords
+type CellRef = { measure: (cb: (fx: number, fy: number, w: number, h: number, px: number, py: number) => void) => void } | null;
 
 const EMPTY_SEEDLING: SeedlingDraft = {
   name: '',
@@ -205,17 +206,15 @@ function GridSizeControl({
 
 function EmptyCell({
   index,
-  cellLayouts,
+  cellRefs,
 }: {
   index: number;
-  cellLayouts: React.MutableRefObject<(CellLayout | null)[]>;
+  cellRefs: React.MutableRefObject<(CellRef)[]>;
 }) {
   return (
     <View
+      ref={(r) => { cellRefs.current[index] = r as unknown as CellRef; }}
       style={[styles.cell, styles.cellEmpty]}
-      onLayout={(e) => {
-        cellLayouts.current[index] = e.nativeEvent.layout;
-      }}
     />
   );
 }
@@ -225,13 +224,12 @@ function EmptyCell({
 type DraggableCellProps = {
   index: number;
   seedling: SeedlingDraft;
-  cellLayouts: React.MutableRefObject<(CellLayout | null)[]>;
-  scrollOffsetY: React.MutableRefObject<number>;
+  cellRefs: React.MutableRefObject<(CellRef)[]>;
   onDragEnd: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
 };
 
 function DraggableCell({
-  index, seedling, cellLayouts, scrollOffsetY, onDragEnd,
+  index, seedling, cellRefs, onDragEnd,
 }: DraggableCellProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -249,7 +247,7 @@ function DraggableCell({
       scale.value      = withSpring(1);
       translateX.value = withSpring(0);
       translateY.value = withSpring(0);
-      runOnJS(onDragEnd)(index, event.absoluteX, event.absoluteY + scrollOffsetY.current);
+      runOnJS(onDragEnd)(index, event.absoluteX, event.absoluteY);
     });
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -269,10 +267,8 @@ function DraggableCell({
   return (
     <GestureDetector gesture={pan}>
       <Animated.View
+        ref={(r) => { cellRefs.current[index] = r as unknown as CellRef; }}
         style={[styles.cell, styles.cellOccupied, animatedStyle]}
-        onLayout={(e) => {
-          cellLayouts.current[index] = e.nativeEvent.layout;
-        }}
       >
         <ThemedText style={styles.cellEmoji}>{seedling.emoji}</ThemedText>
         <ThemedText style={styles.cellName} numberOfLines={1}>
@@ -312,9 +308,8 @@ export default function GridBuilderScreen() {
     () => Array(DEFAULT_ROWS * DEFAULT_COLS).fill(null)
   );
 
-  // Layout refs for drag-and-drop hit detection
-  const cellLayouts  = useRef<(CellLayout | null)[]>([]);
-  const scrollOffsetY = useRef(0);
+  // Refs to each cell View so we can call .measure() for screen-space hit detection
+  const cellRefs = useRef<(CellRef)[]>([]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const totalCells    = rows * cols;
@@ -393,31 +388,42 @@ export default function GridBuilderScreen() {
   // ── Drag-and-drop ──────────────────────────────────────────────────────────
 
   const handleDragEnd = (fromIndex: number, absoluteX: number, absoluteY: number) => {
-    // Find which cell the finger landed on by checking layouts
+    // measure() returns screen-relative coordinates — same space as absoluteX/Y.
+    // We fan out measure() calls for every cell and collect results, then pick
+    // the hit cell once all measurements are in.
+    const total = cellRefs.current.length;
+    if (total === 0) return;
+
+    let remaining = total;
     let toIndex: number | null = null;
-    for (let i = 0; i < cellLayouts.current.length; i++) {
-      const layout = cellLayouts.current[i];
-      if (!layout) continue;
-      if (
-        absoluteX >= layout.x &&
-        absoluteX <= layout.x + layout.width &&
-        absoluteY >= layout.y &&
-        absoluteY <= layout.y + layout.height
-      ) {
-        toIndex = i;
-        break;
-      }
-    }
 
-    if (toIndex === null || toIndex === fromIndex) return;
+    const checkDone = () => {
+      remaining -= 1;
+      if (remaining > 0) return;
+      // All measured — commit swap if a valid target was found
+      if (toIndex === null || toIndex === fromIndex) return;
+      setCells((prev) => {
+        const next = [...prev];
+        const temp      = next[fromIndex];
+        next[fromIndex] = next[toIndex!];
+        next[toIndex!]  = temp;
+        return next;
+      });
+    };
 
-    setCells((prev) => {
-      const next = [...prev];
-      // Swap (works for both occupied→occupied and occupied→empty)
-      const temp     = next[fromIndex];
-      next[fromIndex] = next[toIndex!];
-      next[toIndex!]  = temp;
-      return next;
+    cellRefs.current.forEach((ref, i) => {
+      if (!ref) { remaining -= 1; return; }
+      ref.measure((_fx, _fy, width, height, pageX, pageY) => {
+        if (
+          absoluteX >= pageX &&
+          absoluteX <= pageX + width &&
+          absoluteY >= pageY &&
+          absoluteY <= pageY + height
+        ) {
+          toIndex = i;
+        }
+        checkDone();
+      });
     });
   };
 
@@ -485,10 +491,6 @@ export default function GridBuilderScreen() {
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
-        onScroll={(e) => {
-          scrollOffsetY.current = e.nativeEvent.contentOffset.y;
-        }}
-        scrollEventThrottle={16}
       >
         {/* Header */}
         <View style={styles.headerBanner}>
@@ -568,15 +570,14 @@ export default function GridBuilderScreen() {
                         key={`${idx}-${seedling.name}`}
                         index={idx}
                         seedling={seedling}
-                        cellLayouts={cellLayouts}
-                        scrollOffsetY={scrollOffsetY}
+                        cellRefs={cellRefs}
                         onDragEnd={handleDragEnd}
                       />
                     ) : (
                       <EmptyCell
                         key={idx}
                         index={idx}
-                        cellLayouts={cellLayouts}
+                        cellRefs={cellRefs}
                       />
                     );
                   })}
