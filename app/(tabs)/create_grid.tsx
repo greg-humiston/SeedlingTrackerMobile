@@ -488,14 +488,19 @@ export default function GridBuilderScreen() {
     setSubmitted(true);
     if (!canCreate) return;
 
-    const filledSeedlings = cells
-      .filter((c): c is SeedlingDraft => c !== null)
-      .map((s) => ({
-        name:    s.name.trim(),
-        stage:   s.stage,
-        daysOld: parseInt(s.daysOld, 10) || 0,
-        emoji:   s.emoji,
-      }));
+    // Convert draft cells to the Seedling shape, preserving null positions for the 2-D layout.
+    const gridCells = cells.map((c) =>
+      c === null
+        ? null
+        : {
+            name:    c.name.trim(),
+            stage:   c.stage,
+            daysOld: parseInt(c.daysOld, 10) || 0,
+            emoji:   c.emoji,
+          }
+    );
+
+    const filledSeedlings = gridCells.filter((c): c is NonNullable<typeof c> => c !== null);
 
     const newGrid: Omit<SeedlingGrid, 'id'> = {
       name:        gridName.trim(),
@@ -518,6 +523,9 @@ export default function GridBuilderScreen() {
         text:  'Water your seedlings in the early morning to reduce evaporation and prevent fungal growth.',
       },
       footerIcons: ['🪨', '🌱', '🪱', '🌱', '🪨'],
+      cols,
+      rows,
+      gridCells,
     };
 
     createGrid(newGrid, {

@@ -74,6 +74,17 @@ export const SEEDLING_GRIDS: SeedlingGrid[] = [
       text: 'Pinch off flower buds on basil to keep leaves growing strong and prevent the plant from going to seed too early.',
     },
     footerIcons: ['🪨', '🌱', '🪱', '🌱', '🪨'],
+    // 3 × 2 layout — all 6 cells filled
+    cols: 3,
+    rows: 2,
+    gridCells: [
+      { name: 'Sweet Basil', stage: 'First Leaves', daysOld: 12, emoji: '🌿' },
+      { name: 'Mint', stage: 'First Leaves', daysOld: 8, emoji: '🌱' },
+      { name: 'Rosemary', stage: 'Germinating', daysOld: 2, emoji: '🌿' },
+      { name: 'Thyme', stage: 'Sprouting', daysOld: 6, emoji: '🍃' },
+      { name: 'Parsley', stage: 'Germinating', daysOld: 3, emoji: '🌱' },
+      { name: 'Chives', stage: 'Established', daysOld: 21, emoji: '🌿' },
+    ],
   },
   {
     id: 'veggie-patch',
@@ -102,6 +113,15 @@ export const SEEDLING_GRIDS: SeedlingGrid[] = [
       text: 'Rotate your vegetable crops each season to prevent soil depletion and reduce the build-up of pests and diseases.',
     },
     footerIcons: ['🪨', '🍅', '🪱', '🌽', '🪨'],
+    // 2 × 2 layout — all 4 cells filled
+    cols: 2,
+    rows: 2,
+    gridCells: [
+      { name: 'Cherry Tomato', stage: 'Germinating', daysOld: 5, emoji: '🍅' },
+      { name: 'Sunflower', stage: 'Sprouting', daysOld: 3, emoji: '🌻' },
+      { name: 'Zucchini', stage: 'First Leaves', daysOld: 9, emoji: '🥬' },
+      { name: 'Kale', stage: 'Established', daysOld: 25, emoji: '🥬' },
+    ],
   },
   {
     id: 'flower-bed',
@@ -131,5 +151,16 @@ export const SEEDLING_GRIDS: SeedlingGrid[] = [
       text: 'Deadhead spent blooms regularly to encourage your plants to produce more flowers throughout the season.',
     },
     footerIcons: ['🪨', '🌸', '🪱', '🌼', '🪨'],
+    // 3 × 2 layout — 5 seedlings, last cell empty
+    cols: 3,
+    rows: 2,
+    gridCells: [
+      { name: 'Lavender', stage: 'Established', daysOld: 30, emoji: '💜' },
+      { name: 'Marigold', stage: 'Sprouting', daysOld: 7, emoji: '🌼' },
+      { name: 'Petunia', stage: 'First Leaves', daysOld: 11, emoji: '🌸' },
+      { name: 'Cosmos', stage: 'Germinating', daysOld: 4, emoji: '🌺' },
+      { name: 'Zinnia', stage: 'Sprouting', daysOld: 8, emoji: '🌻' },
+      null,
+    ],
   },
 ];
