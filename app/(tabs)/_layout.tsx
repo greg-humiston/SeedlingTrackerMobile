@@ -33,7 +33,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="create_grid"
         options={{
-          title: 'Garden',
+          title: 'Create Seedling Grid',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />,
         }}
       />
