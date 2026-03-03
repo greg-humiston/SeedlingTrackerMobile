@@ -21,6 +21,7 @@ const MAPPING = {
   'link': 'link',
   'plus.circle.fill': 'add-circle',
   'leaf.fill': 'eco',
+  'square.grid.2x2.fill': 'grid-view',
 } as IconMapping;
 
 /**

@@ -34,4 +34,14 @@ export type SeedlingGrid = {
   seedlings: Seedling[];
   tip: Tip;
   footerIcons: string[];
+  /** Number of columns in the 2-D grid layout. */
+  cols: number;
+  /** Number of rows in the 2-D grid layout. */
+  rows: number;
+  /**
+   * Flat representation of the 2-D grid (length === rows * cols).
+   * null entries are empty cells; non-null entries are placed seedlings.
+   * Index formula: row * cols + col.
+   */
+  gridCells: (Seedling | null)[];
 };

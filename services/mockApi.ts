@@ -48,7 +48,7 @@ export async function updateGrid(
 
 export async function deleteGrid(userId: string, gridId: string): Promise<void> {
   await delay(LATENCY_MS);
-  dbDeleteGrid(userId, gridId);
+  await dbDeleteGrid(userId, gridId);
 }
 
 // Re-export MOCK_USER_ID for convenience so callers only need one import.
