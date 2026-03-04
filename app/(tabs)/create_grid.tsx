@@ -296,6 +296,18 @@ export default function GridBuilderScreen() {
     setDraft(EMPTY_SEEDLING);
   };
 
+  // ── Swap cells (tap-to-select) ─────────────────────────────────────────────
+
+  const handleSwap = (fromIndex: number, toIndex: number) => {
+    setCells((prev) => {
+      const next = [...prev];
+      const temp      = next[fromIndex];
+      next[fromIndex] = next[toIndex];
+      next[toIndex]   = temp;
+      return next;
+    });
+  };
+
   // ── Drag-and-drop ──────────────────────────────────────────────────────────
 
   const handleDragEnd = (fromIndex: number, absoluteX: number, absoluteY: number) => {
@@ -359,6 +371,7 @@ export default function GridBuilderScreen() {
     const filledSeedlings = gridCells.filter((c): c is NonNullable<typeof c> => c !== null);
 
     const newGrid: Omit<SeedlingGrid, 'id'> = {
+      createdAt:   new Date().toISOString(),
       name:        gridName.trim(),
       emoji:       gridEmoji,
       description: gridDescription.trim(),
@@ -507,6 +520,7 @@ export default function GridBuilderScreen() {
           cells={cells}
           cellRefs={cellRefs}
           onDragEnd={handleDragEnd}
+          onSwap={handleSwap}
         />
 
         {/* Validation Checklist */}
