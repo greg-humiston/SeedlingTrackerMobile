@@ -39,6 +39,29 @@ export type SelectedSeedling = Seedling & {
   lastWateredAt?: string;
 };
 
+/**
+ * Draft form state for creating a custom seedling.
+ * All string fields start as '' and frostTolerance starts as null
+ * (null means the user has not yet made a selection).
+ */
+export type DraftSeedling = {
+  variety: string;
+  type: string;
+  emoji: string;
+  whereToStart: string;
+  whenToStart: string;
+  soilTemperatureForGermination: string;
+  spacing: string;
+  depth: string;
+  daysToGerminate: string;
+  wateringFrequency: string;
+  season: string;
+  frostTolerance: boolean | null;
+  height: string;
+  daysToHarvest: string;
+  soilAcidity: string;
+};
+
 export type Tip = {
   title: string;
   text: string;
