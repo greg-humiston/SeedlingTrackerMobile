@@ -244,6 +244,86 @@ export const styles = StyleSheet.create({
     fontSize: 20,
   },
 
+  // ── Seedling dropdown ─────────────────────────────────────────────────────────
+  dropdownTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F7F2',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1.5,
+    borderColor: '#D6EAD9',
+  },
+  dropdownTriggerText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+  },
+  dropdownPlaceholder: {
+    flex: 1,
+    fontSize: 15,
+    color: '#aaa',
+  },
+  dropdownSearchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    paddingVertical: 0,
+  },
+  dropdownClearBtn: {
+    paddingHorizontal: 6,
+  },
+  dropdownClearBtnText: {
+    fontSize: 14,
+    color: '#999',
+  },
+  dropdownChevron: {
+    fontSize: 12,
+    color: '#888',
+    marginLeft: 8,
+  },
+  dropdownList: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#D6EAD9',
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F7F2',
+  },
+  dropdownItemSelected: {
+    backgroundColor: '#EAF5EC',
+  },
+  dropdownItemEmoji: {
+    fontSize: 22,
+  },
+  dropdownItemText: {
+    flex: 1,
+  },
+  dropdownItemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  dropdownItemStage: {
+    fontSize: 11,
+    color: GARDEN_GREEN,
+    marginTop: 1,
+  },
+  dropdownItemCheck: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: GARDEN_GREEN,
+  },
+
   // ── Add seedling button ───────────────────────────────────────────────────────
   addButton: {
     backgroundColor: LIGHT_GREEN,

@@ -14,11 +14,11 @@ import {
   FOOTER_SOIL,
 } from '@/constants/icons';
 import {
-  GARDEN_GREEN, PETAL_YELLOW, WATER_BLUE,
+  GARDEN_GREEN, PETAL_YELLOW, SEEDLINGS, WATER_BLUE,
 } from '@/data/home';
 import { useCreateGrid } from '@/hooks/useGrids';
 import { styles } from '@/styles/create-grid';
-import type { Seedling, SeedlingGrid } from '@/types/home';
+import type { Seedling, SeedlingGrid, SelectedSeedling } from '@/types/home';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -36,22 +36,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 const DEFAULT_COLS = 4;
 const DEFAULT_ROWS = 3;
 
-const STAGE_OPTIONS: Seedling['stage'][] = [
-  'Germinating',
-  'Sprouting',
-  'First Leaves',
-  'Established',
-];
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type SeedlingDraft = Omit<Seedling, 'daysOld'> & { daysOld: string };
+type DraftSeedling = {
+  selectedSeedling: Seedling | null;
+};
 
-const EMPTY_SEEDLING: SeedlingDraft = {
-  name: '',
-  stage: 'Germinating',
-  daysOld: '',
-  emoji: EMOJI_SEEDLING,
+const EMPTY_SEEDLING: DraftSeedling = {
+  selectedSeedling: null,
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -80,32 +72,6 @@ function LabeledInput({
         keyboardType={keyboardType}
       />
       {hasError && <ThemedText style={styles.errorText}>⚠ {error}</ThemedText>}
-    </View>
-  );
-}
-
-function StageSelector({
-  selected, onSelect,
-}: {
-  selected: Seedling['stage'];
-  onSelect: (s: Seedling['stage']) => void;
-}) {
-  return (
-    <View style={styles.inputGroup}>
-      <ThemedText style={styles.inputLabel}>Stage</ThemedText>
-      <View style={styles.optionRow}>
-        {STAGE_OPTIONS.map((stage) => (
-          <TouchableOpacity
-            key={stage}
-            style={[styles.optionChip, selected === stage && styles.optionChipSelected]}
-            onPress={() => onSelect(stage)}
-          >
-            <ThemedText style={[styles.optionChipText, selected === stage && styles.optionChipTextSelected]}>
-              {stage}
-            </ThemedText>
-          </TouchableOpacity>
-        ))}
-      </View>
     </View>
   );
 }
@@ -163,6 +129,78 @@ function ValidationRow({
   );
 }
 
+function SeedlingSelector({
+  onSelect,
+}: {
+  onSelect: (s: Seedling) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const filtered = query.trim()
+    ? SEEDLINGS.filter((s) => {
+      return s.variety?.toLowerCase().includes(query.toLowerCase());
+    })
+    : SEEDLINGS;
+
+  const handleChangeText = (text: string) => {
+    setQuery(text);
+    if (text.length > 0) setOpen(true);
+  };
+
+  const handleClear = () => setQuery('');
+
+  return (
+    <View style={styles.inputGroup}>
+      <ThemedText style={styles.inputLabel}>Seedling</ThemedText>
+      <View style={styles.dropdownTrigger}>
+        <TextInput
+          style={styles.dropdownSearchInput}
+          value={query}
+          onChangeText={handleChangeText}
+          placeholder={'Search seeds to choose…'}
+          placeholderTextColor={'#aaa'}
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={handleClear} style={styles.dropdownClearBtn} activeOpacity={0.7}>
+            <ThemedText style={styles.dropdownClearBtnText}>✕</ThemedText>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity onPress={() => setOpen((o) => !o)} activeOpacity={0.7}>
+          <ThemedText style={styles.dropdownChevron}>{open ? '▲' : '▼'}</ThemedText>
+        </TouchableOpacity>
+      </View>
+      {open && (
+        <View style={styles.dropdownList}>
+          {filtered.length === 0 ? (
+            <View style={styles.dropdownItem}>
+              <ThemedText style={styles.dropdownPlaceholder}>{'No results for "' + query + '"'}</ThemedText>
+            </View>
+          ) : (
+            filtered.map((s) => (
+              <TouchableOpacity
+                key={s.variety}
+                style={[styles.dropdownItem]}
+                onPress={() => { 
+                  setOpen(false); 
+                  setQuery(''); 
+                  onSelect(s); 
+                }}
+                activeOpacity={0.75}
+              >
+                <ThemedText style={styles.dropdownItemEmoji}>{s.emoji}</ThemedText>
+                <View style={styles.dropdownItemText}>
+                  <ThemedText style={styles.dropdownItemName}>{s.variety}</ThemedText>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
 function GridSizeControl({
   label, value, onIncrement, onDecrement, decrementDisabled,
 }: {
@@ -212,10 +250,10 @@ export default function GridBuilderScreen() {
   const [submitted, setSubmitted]             = useState(false);
 
   // Seedling draft
-  const [draft, setDraft] = useState<SeedlingDraft>(EMPTY_SEEDLING);
+  const [draft, setDraft] = useState<DraftSeedling>(EMPTY_SEEDLING);
 
   // Flat grid cells: index = row * cols + col
-  const [cells, setCells] = useState<(SeedlingDraft | null)[]>(
+  const [cells, setCells] = useState<SelectedSeedling[]>(
     () => Array(DEFAULT_ROWS * DEFAULT_COLS).fill(null)
   );
 
@@ -239,8 +277,8 @@ export default function GridBuilderScreen() {
   const canDecrementCols = cols > 1 && seedlingCount < rows * (cols - 1);
   const canDecrementRows = rows > 1 && seedlingCount < (rows - 1) * cols;
 
-  const resizeCells = (newRows: number, newCols: number, currentCells: (SeedlingDraft | null)[]) => {
-    const result: (SeedlingDraft | null)[] = Array(newRows * newCols).fill(null);
+  const resizeCells = (newRows: number, newCols: number, currentCells: SelectedSeedling[]) => {
+    const result: SelectedSeedling[] = Array(newRows * newCols).fill(null);
     for (let r = 0; r < Math.min(rows, newRows); r++) {
       for (let c = 0; c < Math.min(cols, newCols); c++) {
         result[r * newCols + c] = currentCells[r * cols + c] ?? null;
@@ -276,21 +314,24 @@ export default function GridBuilderScreen() {
   };
 
   // ── Add seedling ───────────────────────────────────────────────────────────
-
-  const updateDraft = (fields: Partial<SeedlingDraft>) =>
-    setDraft((prev) => ({ ...prev, ...fields }));
-
-  const handleAddSeedling = () => {
-    if (!draft.name.trim()) {
-      Alert.alert('Missing name', 'Please enter a name for the seedling.');
+  const handleAddSeedling = (seedling: Seedling) => {
+    if (!seedling) {
+      Alert.alert('No Seedling selected', 'Please select a seedling from the dropdown.');
       return;
     }
+
+    const selectedSeedling = {
+      ...seedling,
+      stage: 'Germinating',
+      daysOld: '0'
+    } as SelectedSeedling;
+
     if (gridFull) return;
     const firstEmpty = cells.findIndex((c) => c === null);
     if (firstEmpty === -1) return;
     setCells((prev) => {
       const next = [...prev];
-      next[firstEmpty] = draft;
+      next[firstEmpty] = selectedSeedling;
       return next;
     });
     setDraft(EMPTY_SEEDLING);
@@ -356,19 +397,7 @@ export default function GridBuilderScreen() {
     setSubmitted(true);
     if (!canCreate) return;
 
-    // Convert draft cells to the Seedling shape, preserving null positions for the 2-D layout.
-    const gridCells = cells.map((c) =>
-      c === null
-        ? null
-        : {
-            name:    c.name.trim(),
-            stage:   c.stage,
-            daysOld: parseInt(c.daysOld, 10) || 0,
-            emoji:   c.emoji,
-          }
-    );
-
-    const filledSeedlings = gridCells.filter((c): c is NonNullable<typeof c> => c !== null);
+    const filledSeedlings = cells.filter((c): c is NonNullable<typeof c> => c !== null);
 
     const newGrid: Omit<SeedlingGrid, 'id'> = {
       createdAt:   new Date().toISOString(),
@@ -394,7 +423,7 @@ export default function GridBuilderScreen() {
       footerIcons: FOOTER_SOIL,
       cols,
       rows,
-      gridCells,
+      gridCells: cells,
     };
 
     createGrid(newGrid, {
@@ -458,37 +487,9 @@ export default function GridBuilderScreen() {
         {/* Add Seedling */}
         <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>{EMOJI_SEEDLING} Add a Seedling</ThemedText>
-          <LabeledInput
-            label="Seedling Name"
-            value={draft.name}
-            placeholder="e.g. Sweet Basil"
-            onChangeText={(text) => updateDraft({ name: text })}
+          <SeedlingSelector
+            onSelect={handleAddSeedling}
           />
-          <LabeledInput
-            label="Days Old"
-            value={draft.daysOld}
-            placeholder="e.g. 7"
-            onChangeText={(text) => updateDraft({ daysOld: text })}
-            keyboardType="numeric"
-          />
-          <StageSelector
-            selected={draft.stage}
-            onSelect={(stage) => updateDraft({ stage })}
-          />
-          <EmojiSelector
-            selected={draft.emoji}
-            onSelect={(emoji) => updateDraft({ emoji })}
-          />
-          <TouchableOpacity
-            style={[styles.addButton, gridFull && styles.addButtonDisabled]}
-            onPress={handleAddSeedling}
-            disabled={gridFull}
-            activeOpacity={0.8}
-          >
-            <ThemedText style={styles.addButtonText}>
-              {gridFull ? '⛔ Grid Full — Increase Size to Add More' : '+ Add Seedling'}
-            </ThemedText>
-          </TouchableOpacity>
         </ThemedView>
 
         {/* Grid Size */}
