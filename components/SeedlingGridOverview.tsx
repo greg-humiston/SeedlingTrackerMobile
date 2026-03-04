@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import type { Seedling, SeedlingGrid, Stat } from '@/types/home';
 import { styles } from '@/styles/seedling-grid-overview';
+import type { SeedlingGrid, SelectedSeedling, Stat } from '@/types/home';
+import { useState } from 'react';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ function StatCard({ emoji, label, value, color }: StatCardProps) {
   );
 }
 
-type SeedlingGridItemProps = Seedling & {
+type SeedlingGridItemProps = SelectedSeedling & {
   isSelected: boolean;
   onPress: () => void;
 };
@@ -41,7 +41,7 @@ function SeedlingGridItem({ name, stage, daysOld, emoji, isSelected, onPress }: 
   );
 }
 
-type SeedlingSummaryProps = Seedling;
+type SeedlingSummaryProps = SelectedSeedling;
 
 function SeedlingSummary({ name, stage, daysOld, emoji }: SeedlingSummaryProps) {
   return (
@@ -89,10 +89,10 @@ export default function SeedlingGridOverview({
   tip,
   footerIcons,
 }: SeedlingGridOverviewProps) {
-  const [selectedSeedling, setSelectedSeedling] = useState<Seedling | null>(null);
+  const [selectedSeedling, setSelectedSeedling] = useState<SelectedSeedling | null>(null);
 
-  const handleGridItemPress = (seedling: Seedling) => {
-    setSelectedSeedling(prev => prev?.name === seedling.name ? null : seedling);
+  const handleGridItemPress = (seedling: SelectedSeedling) => {
+    setSelectedSeedling(prev => prev?.variety === seedling.variety ? null : seedling);
   };
 
   return (
@@ -128,9 +128,9 @@ export default function SeedlingGridOverview({
         <View style={styles.grid}>
           {seedlings.map((seedling) => (
             <SeedlingGridItem
-              key={seedling.name}
+              key={seedling.variety}
               {...seedling}
-              isSelected={selectedSeedling?.name === seedling.name}
+              isSelected={selectedSeedling?.variety === seedling.variety}
               onPress={() => handleGridItemPress(seedling)}
             />
           ))}

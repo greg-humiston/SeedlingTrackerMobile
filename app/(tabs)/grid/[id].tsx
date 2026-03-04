@@ -5,7 +5,7 @@ import { EMOJI_MAP, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
 import { useGrid, useUpdateGrid } from '@/hooks/useGrids';
 import { editStyles, styles } from '@/styles/grid-detail';
-import type { Seedling, SeedlingGrid, Stat } from '@/types/home';
+import type { SeedlingGrid, SelectedSeedling, Stat } from '@/types/home';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -37,7 +37,7 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
   // ── Edit mode ──────────────────────────────────────────────────────────────
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editCells, setEditCells] = useState<(Seedling | null)[]>([]);
+  const [editCells, setEditCells] = useState<(SelectedSeedling | null)[]>([]);
   const cellRefs = useRef<CellRef[]>([]);
 
   const handleEditStart = () => {

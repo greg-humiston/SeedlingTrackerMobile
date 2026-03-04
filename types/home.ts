@@ -13,10 +13,26 @@ export type Stat = {
 };
 
 export type Seedling = {
-  name: string;
-  stage: string;
-  daysOld: number;
+  id: number;
+  variety: string;
+  type: string;
   emoji: string;
+  whereToStart: string;
+  whenToStart: string;
+  soilTemperatureForGermination: string;
+  spacing: string;
+  depth: string;
+  daysToGerminate: string;
+  wateringFrequency: string;
+  season: string;
+  frostTolerance: boolean;
+  height: string;
+  daysToHarvest: string;
+  soilAcidity: string;
+};
+
+export type SelectedSeedling = Seedling & {
+  stage: string;
   /** ISO 8601 date the seedling was first planted. */
   plantedAt?: string;
   /** ISO 8601 date the seedling was last watered. */
@@ -37,7 +53,7 @@ export type SeedlingGrid = {
   description: string;
   header: Header;
   stats: Stat[];
-  seedlings: Seedling[];
+  seedlings: SelectedSeedling[];
   tip: Tip;
   footerIcons: string[];
   /** Number of columns in the 2-D grid layout. */
@@ -49,5 +65,5 @@ export type SeedlingGrid = {
    * null entries are empty cells; non-null entries are placed seedlings.
    * Index formula: row * cols + col.
    */
-  gridCells: (Seedling | null)[];
+  gridCells: (SelectedSeedling | null)[];
 };

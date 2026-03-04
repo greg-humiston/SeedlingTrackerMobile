@@ -321,7 +321,7 @@ function DraggableCell({
         </ThemedText>
         <View style={styles.cellStageBadge}>
           <ThemedText style={styles.cellStageBadgeText}>
-            {cell.stage.split(' ')[0]}
+            {cell.stage}
           </ThemedText>
         </View>
       </Animated.View>
