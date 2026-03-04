@@ -60,9 +60,12 @@ export function useUpdateGrid() {
       gridId: string;
       updates: Partial<Omit<SeedlingGrid, 'id'>>;
     }) => updateGrid(MOCK_USER_ID, gridId, updates),
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
+      // Write the mutation result directly into the detail cache — no second
+      // round-trip needed since the updated grid is already the return value.
+      queryClient.setQueryData(gridKeys.detail(variables.gridId), data);
+      // The list cache needs a refetch because aggregate stats may have changed.
       queryClient.invalidateQueries({ queryKey: gridKeys.all });
-      queryClient.invalidateQueries({ queryKey: gridKeys.detail(variables.gridId) });
     },
   });
 }

@@ -109,20 +109,19 @@ export const styles = StyleSheet.create({
   },
 
   // ── Grid preview ─────────────────────────────────────────────────────────────
-  gridScrollContent: {
-    paddingVertical: 4,
-    paddingHorizontal: 2,
+  gridContainer: {
+    gap: 8,
   },
   gridRow: {
     flexDirection: 'row',
+    gap: 8,
   },
 
-  // Base cell (shared)
+  // Base cell (shared) — flex: 1 + aspectRatio: 1 fills parent width per column
   cell: {
-    width: 72,
-    height: 72,
-    margin: 4,
-    borderRadius: 14,
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -132,6 +131,12 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#D6EAD9',
   },
+  // Selected cell (tap-to-select edit mode)
+  cellSelected: {
+    borderColor: GARDEN_GREEN,
+    backgroundColor: '#DFF0E4',
+    borderWidth: 2.5,
+  },
   // Empty cell
   cellEmpty: {
     backgroundColor: 'transparent',
@@ -140,25 +145,25 @@ export const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   cellEmoji: {
-    fontSize: 26,
-    marginBottom: 2,
+    fontSize: 32,
+    marginBottom: 3,
   },
   cellName: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '600',
     color: '#444',
     textAlign: 'center',
-    paddingHorizontal: 2,
+    paddingHorizontal: 4,
   },
   cellStageBadge: {
-    marginTop: 2,
+    marginTop: 3,
     backgroundColor: LIGHT_GREEN,
-    borderRadius: 6,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    borderRadius: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   cellStageBadgeText: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: '700',
     color: LEAF_GREEN,
   },

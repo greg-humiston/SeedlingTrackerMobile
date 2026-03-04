@@ -17,6 +17,10 @@ export type Seedling = {
   stage: string;
   daysOld: number;
   emoji: string;
+  /** ISO 8601 date the seedling was first planted. */
+  plantedAt?: string;
+  /** ISO 8601 date the seedling was last watered. */
+  lastWateredAt?: string;
 };
 
 export type Tip = {
@@ -26,6 +30,8 @@ export type Tip = {
 
 export type SeedlingGrid = {
   id: string;
+  /** ISO 8601 date string set when the grid is first created. */
+  createdAt: string;
   name: string;
   emoji: string;
   description: string;
