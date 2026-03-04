@@ -4,14 +4,13 @@ import { ThemedView } from '@/components/themed-view';
 import { EMOJI_MAP, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
 import { useGrid, useUpdateGrid } from '@/hooks/useGrids';
-import { styles } from '@/styles/grid-detail';
+import { editStyles, styles } from '@/styles/grid-detail';
 import type { Seedling, SeedlingGrid, Stat } from '@/types/home';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -260,52 +259,3 @@ export default function GridDetailScreen() {
   );
 }
 
-// ─── Edit-mode Styles ─────────────────────────────────────────────────────────
-
-const editStyles = StyleSheet.create({
-  editButton: {
-    marginTop: 14,
-    paddingVertical: 11,
-    borderRadius: 12,
-    alignItems: 'center',
-    backgroundColor: '#F0F7F2',
-    borderWidth: 1,
-    borderColor: GARDEN_GREEN,
-  },
-  editButtonText: {
-    color: GARDEN_GREEN,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  editActions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: 12,
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#DDD',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: 12,
-    alignItems: 'center',
-    backgroundColor: GARDEN_GREEN,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
