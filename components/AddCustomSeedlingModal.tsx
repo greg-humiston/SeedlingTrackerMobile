@@ -1,4 +1,5 @@
 import { EMOJI_OPTIONS } from '@/constants/icons';
+import { selectorStyles as s } from '@/styles/seedling-selector';
 import type { DraftSeedling, Seedling } from '@/types/home';
 import { useState } from 'react';
 import {
@@ -8,8 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ImagePickerExample from './ImagePicker';
 import { ThemedText } from './themed-text';
-import { selectorStyles as s } from '@/styles/seedling-selector';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -174,12 +175,16 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleCancel}>
       <View style={s.overlay}>
+        <View>
+        </View>
         <View style={s.card}>
           <View style={s.cardHandle} />
           <View style={s.cardHeader}>
             <ThemedText style={s.cardTitle}>Add Custom Seedling</ThemedText>
             <ThemedText style={s.cardSubtitle}>Fill in all fields to save your variety</ThemedText>
           </View>
+
+          <ImagePickerExample />
 
           <ScrollView
             contentContainerStyle={s.scrollContent}
