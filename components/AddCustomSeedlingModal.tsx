@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import ImagePickerExample from './ImagePicker';
+import SeedPacketPicker from './SeedPacketPicker';
 import { ThemedText } from './themed-text';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -46,6 +46,71 @@ type Props = {
   onCancel: () => void;
 };
 
+// ─── Sub-components (defined outside to prevent focus loss on re-render) ──────
+
+function Field({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  multiline?: boolean;
+}) {
+  return (
+    <View style={s.inputGroup}>
+      <ThemedText style={s.inputLabel}>{label}</ThemedText>
+      <TextInput
+        style={[s.input, multiline && { minHeight: 60, textAlignVertical: 'top' }]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#aaa"
+        multiline={multiline}
+      />
+    </View>
+  );
+}
+
+function ChipRow({
+  label,
+  options,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  options: string[];
+  selected: string;
+  onSelect: (v: string) => void;
+}) {
+  return (
+    <View style={s.inputGroup}>
+      <ThemedText style={s.inputLabel}>{label}</ThemedText>
+      <View style={s.optionRow}>
+        {options.map((opt) => {
+          const active = selected === opt;
+          return (
+            <TouchableOpacity
+              key={opt}
+              style={[s.optionChip, active && s.optionChipSelected]}
+              onPress={() => onSelect(opt)}
+              activeOpacity={0.75}
+            >
+              <ThemedText style={[s.optionChipText, active && s.optionChipTextSelected]}>
+                {opt}
+              </ThemedText>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onSave, onCancel }: Props) {
@@ -53,6 +118,18 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
 
   const set = (key: keyof DraftSeedling, value: string | boolean | null) =>
     setDraft((prev) => ({ ...prev, [key]: value }));
+
+  const handleSeedlingExtracted = (extracted: DraftSeedling) =>
+    setDraft((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(extracted) as (keyof DraftSeedling)[]) {
+        const val = extracted[key];
+        if (val !== '' && val !== null) {
+          (next as any)[key] = val;
+        }
+      }
+      return next;
+    });
 
   // ── Validation ──────────────────────────────────────────────────────────────
 
@@ -111,65 +188,6 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
     onCancel();
   };
 
-  // ── Reusable sub-components ──────────────────────────────────────────────────
-
-  const Field = ({
-    label,
-    field,
-    placeholder,
-    multiline,
-  }: {
-    label: string;
-    field: keyof DraftSeedling;
-    placeholder: string;
-    multiline?: boolean;
-  }) => (
-    <View style={s.inputGroup}>
-      <ThemedText style={s.inputLabel}>{label}</ThemedText>
-      <TextInput
-        style={[s.input, multiline && { minHeight: 60, textAlignVertical: 'top' }]}
-        value={draft[field] as string}
-        onChangeText={(v) => set(field, v)}
-        placeholder={placeholder}
-        placeholderTextColor="#aaa"
-        multiline={multiline}
-      />
-    </View>
-  );
-
-  const ChipRow = ({
-    label,
-    options,
-    selected,
-    onSelect,
-  }: {
-    label: string;
-    options: string[];
-    selected: string;
-    onSelect: (v: string) => void;
-  }) => (
-    <View style={s.inputGroup}>
-      <ThemedText style={s.inputLabel}>{label}</ThemedText>
-      <View style={s.optionRow}>
-        {options.map((opt) => {
-          const active = selected === opt;
-          return (
-            <TouchableOpacity
-              key={opt}
-              style={[s.optionChip, active && s.optionChipSelected]}
-              onPress={() => onSelect(opt)}
-              activeOpacity={0.75}
-            >
-              <ThemedText style={[s.optionChipText, active && s.optionChipTextSelected]}>
-                {opt}
-              </ThemedText>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </View>
-  );
-
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -183,7 +201,7 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
             <ThemedText style={s.cardSubtitle}>Fill in all fields to save your variety</ThemedText>
           </View>
           <View>
-            <ImagePickerExample />
+            <SeedPacketPicker onSeedlingExtracted={handleSeedlingExtracted} />
           </View>
 
           <ScrollView
@@ -249,10 +267,11 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
                 selected={draft.whereToStart}
                 onSelect={(v) => set('whereToStart', v)}
               />
-              <Field label="When to Start" field="whenToStart" placeholder="e.g. 6-8 weeks before last frost" />
+              <Field label="When to Start" value={draft.whenToStart} onChangeText={(v) => set('whenToStart', v)} placeholder="e.g. 6-8 weeks before last frost" />
               <Field
                 label="Soil Temp for Germination (°F)"
-                field="soilTemperatureForGermination"
+                value={draft.soilTemperatureForGermination}
+                onChangeText={(v) => set('soilTemperatureForGermination', v)}
                 placeholder="e.g. 65-75"
               />
             </View>
@@ -260,17 +279,18 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
             {/* ── Spacing & Depth ── */}
             <View style={s.section}>
               <ThemedText style={s.sectionTitle}>Spacing & Depth</ThemedText>
-              <Field label="Spacing" field="spacing" placeholder="e.g. 12-18 inches" />
-              <Field label="Depth" field="depth" placeholder="e.g. 1/4 inch" />
+              <Field label="Spacing" value={draft.spacing} onChangeText={(v) => set('spacing', v)} placeholder="e.g. 12-18 inches" />
+              <Field label="Depth" value={draft.depth} onChangeText={(v) => set('depth', v)} placeholder="e.g. 1/4 inch" />
             </View>
 
             {/* ── Growth ── */}
             <View style={s.section}>
               <ThemedText style={s.sectionTitle}>Growth</ThemedText>
-              <Field label="Days to Germinate" field="daysToGerminate" placeholder="e.g. 7-14" />
+              <Field label="Days to Germinate" value={draft.daysToGerminate} onChangeText={(v) => set('daysToGerminate', v)} placeholder="e.g. 7-14" />
               <Field
                 label="Watering Frequency"
-                field="wateringFrequency"
+                value={draft.wateringFrequency}
+                onChangeText={(v) => set('wateringFrequency', v)}
                 placeholder="e.g. Keep soil moist, water when top inch is dry"
                 multiline
               />
@@ -311,9 +331,9 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
             {/* ── Expected Results ── */}
             <View style={s.section}>
               <ThemedText style={s.sectionTitle}>Expected Results</ThemedText>
-              <Field label="Height" field="height" placeholder="e.g. 12-24 inches" />
-              <Field label="Days to Harvest" field="daysToHarvest" placeholder="e.g. 60-90" />
-              <Field label="Soil Acidity" field="soilAcidity" placeholder="e.g. 6.0-7.0 pH" />
+              <Field label="Height" value={draft.height} onChangeText={(v) => set('height', v)} placeholder="e.g. 12-24 inches" />
+              <Field label="Days to Harvest" value={draft.daysToHarvest} onChangeText={(v) => set('daysToHarvest', v)} placeholder="e.g. 60-90" />
+              <Field label="Soil Acidity" value={draft.soilAcidity} onChangeText={(v) => set('soilAcidity', v)} placeholder="e.g. 6.0-7.0 pH" />
             </View>
           </ScrollView>
 
