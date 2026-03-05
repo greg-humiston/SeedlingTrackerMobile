@@ -157,7 +157,13 @@ function SeedlingPreviewPopup({
           <View style={popupStyles.divider} />
 
           {/* Static detail rows */}
-          <InfoRow label="Age"     value={ageDisplay} />
+          {
+            ageDisplay !== 'Unknown'
+              ? (
+                <InfoRow label="Age"     value={ageDisplay} />
+              )
+              : null
+          }
           <InfoRow label="Planted" value={formatDate(createdAt)} />
           <InfoRow label="Health"  value={healthFromStage(cell.stage)} />
 
