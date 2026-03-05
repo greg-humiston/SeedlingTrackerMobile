@@ -46,8 +46,9 @@ export function ImagePicker() {
 			);
 
 			if (response.data.responses && response.data.responses[0].fullTextAnnotation) {
-				const text = response.data.responses[0].fullTextAnnotation.text;
-				setExtractedText(text);
+				const data = JSON.stringify(response.data);
+        console.log('LEL data:', data);
+				setExtractedText(data);
 			} else {
 				setExtractedText('No text found or unable to analyze.');
 			}
@@ -100,9 +101,11 @@ export function ImagePicker() {
 			{loading && <ActivityIndicator size="large" color="#0000ff" />}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {extractedText ? (
+      <View style={styles.extractedTextContaine}>
         <ScrollView style={styles.textContainer}>
           <Text style={styles.text}>{extractedText}</Text>
         </ScrollView>
+      </View>
       ) : null}
     </View>
   );
@@ -110,10 +113,7 @@ export function ImagePicker() {
 
 const styles = StyleSheet.create({
 	container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    height: 500,
   },
   image: {
     width: 200,
@@ -121,13 +121,18 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     resizeMode: 'contain',
   },
+  extractedTextContaine: {
+    height: 500,
+    backgroundColor: '#f0f0f0',
+  },
   textContainer: {
     marginTop: 20,
     padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    maxHeight: 200,
+    height: 500,
     width: '100%',
+    overflow: 'scroll',
   },
   text: {
     fontSize: 16,

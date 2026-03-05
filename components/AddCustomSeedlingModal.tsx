@@ -175,16 +175,16 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleCancel}>
       <View style={s.overlay}>
-        <View>
-        </View>
+
         <View style={s.card}>
           <View style={s.cardHandle} />
           <View style={s.cardHeader}>
             <ThemedText style={s.cardTitle}>Add Custom Seedling</ThemedText>
             <ThemedText style={s.cardSubtitle}>Fill in all fields to save your variety</ThemedText>
           </View>
-
-          <ImagePickerExample />
+          <View>
+            <ImagePickerExample />
+          </View>
 
           <ScrollView
             contentContainerStyle={s.scrollContent}
