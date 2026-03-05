@@ -1,29 +1,66 @@
+import type { DraftSeedling } from '@/types/home';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 import * as ExpoImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, Image, StyleSheet, Text, View } from 'react-native';
 
-const GOOGLE_CLOUD_VISION_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY;
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY;
 
-export function ImagePicker() {
+type Props = {
+  onSeedlingExtracted?: (draft: DraftSeedling) => void;
+};
+
+export function SeedPacketPicker({ onSeedlingExtracted }: Props) {
   const [image, setImage] = useState<string | null | undefined>(null);
   const [extractedText, setExtractedText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+	const extractSeedlingFromText = async (text: string): Promise<DraftSeedling | null> => {
+		const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY!);
+		const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+		const prompt = `You are a gardening assistant. Extract seedling/plant information from the following seed packet text and return ONLY a valid JSON object with no markdown formatting.
+
+Use these exact values where applicable:
+- type: one of ["Herb", "Vegetable", "Leafy Green", "Flower", "Fruit", "Root Vegetable", "Lettuce", "Other"]
+- whereToStart: one of ["Indoors", "Outdoors", "Indoors or Outdoors"]
+- season: one of ["Warm", "Cool", "Cool to Warm"]
+- frostTolerance: true or false
+
+JSON fields to populate:
+{
+  "variety": "",
+  "type": "",
+  "emoji": "",
+  "whereToStart": "",
+  "whenToStart": "",
+  "soilTemperatureForGermination": "",
+  "spacing": "",
+  "depth": "",
+  "daysToGerminate": "",
+  "wateringFrequency": "",
+  "season": "",
+  "frostTolerance": null,
+  "height": "",
+  "daysToHarvest": "",
+  "soilAcidity": ""
+}
+
+Seed packet text:
+${text}`;
+
+		const result = await model.generateContent(prompt);
+		const responseText = result.response.text().trim().replace(/^```json\n?|```$/g, '');
+		return JSON.parse(responseText) as DraftSeedling;
+	};
 
 	// TODO: is this different at all due to needing a base64 encoded image?
 	const analyzeImage = async (uri: any) => {
 		setLoading(true);
 		setExtractedText('');
 		try {
-			// Read the image file and convert it to base64
-			// const base64imageTest = await FileSystem.readAsStringAsync(uri, {
-			// 	encoding: FileSystem.EncodingType.Base64,
-			// });
-
-			// const base64image = await new FileSystem.File(uri).base64();
-			// console.log('base64image:', base64image);
-
 			const requestData = {
 				requests: [
 					{
@@ -41,14 +78,23 @@ export function ImagePicker() {
 			};
 
 			const response = await axios.post(
-				`https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_CLOUD_VISION_API_KEY}`, 
+				`https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_API_KEY}`,
 				requestData
 			);
 
 			if (response.data.responses && response.data.responses[0].fullTextAnnotation) {
-				const data = JSON.stringify(response.data);
-        console.log('LEL data:', data);
-				setExtractedText(data);
+				const fullText: string = response.data.responses[0].textAnnotations?.[0]?.description
+					?? response.data.responses[0].fullTextAnnotation.text;
+				setExtractedText(fullText);
+
+				if (onSeedlingExtracted) {
+					const draft = await extractSeedlingFromText(fullText);
+					if (draft) {
+            onSeedlingExtracted(draft);
+            console.log(draft);
+            setExtractedText(JSON.stringify(draft, null, 2));
+          }
+				}
 			} else {
 				setExtractedText('No text found or unable to analyze.');
 			}
@@ -91,8 +137,12 @@ export function ImagePicker() {
   };
 
   return (
-    <View style={styles.container}>
-      <Button title="Pick an image from camera roll" onPress={pickImage} />
+    <View>
+      <View style={styles.buttonContainer}>
+        <View style={styles.buttonContainer}>
+          <Button title="Scan Seedling Packet" onPress={pickImage} />
+        </View>
+      </View>
       {
 				image && 
 				// TODO: figure out if base64 encoding is actually working here
@@ -100,26 +150,23 @@ export function ImagePicker() {
 			}
 			{loading && <ActivityIndicator size="large" color="#0000ff" />}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {extractedText ? (
-      <View style={styles.extractedTextContaine}>
-        <ScrollView style={styles.textContainer}>
-          <Text style={styles.text}>{extractedText}</Text>
-        </ScrollView>
-      </View>
-      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-	container: {
-    height: 500,
-  },
   image: {
     width: 200,
     height: 200,
     marginVertical: 20,
     resizeMode: 'contain',
+  },
+  buttonContainer: {
+    marginVertical: 10,
+    width: 200,
+    height: 50,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   extractedTextContaine: {
     height: 500,
@@ -143,4 +190,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImagePicker;
+export default SeedPacketPicker;
