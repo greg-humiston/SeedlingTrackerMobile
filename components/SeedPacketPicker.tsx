@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 import * as ExpoImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Button, Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, StyleSheet, Text, View } from 'react-native';
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY;
 
@@ -143,11 +143,6 @@ ${text}`;
           <Button title="Scan Seedling Packet" onPress={pickImage} />
         </View>
       </View>
-      {
-				image && 
-				// TODO: figure out if base64 encoding is actually working here
-				<Image source={{ uri: 'data:image/jpeg;base64,' + image }} style={styles.image} />
-			}
 			{loading && <ActivityIndicator size="large" color="#0000ff" />}
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
