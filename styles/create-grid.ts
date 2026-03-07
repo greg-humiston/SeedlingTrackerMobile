@@ -137,6 +137,12 @@ export const styles = StyleSheet.create({
     backgroundColor: '#DFF0E4',
     borderWidth: 2.5,
   },
+  // Highlighted cell (navigated from a watering notification)
+  cellHighlighted: {
+    borderColor: '#3A86FF',
+    backgroundColor: '#DDEEFF',
+    borderWidth: 2.5,
+  },
   // Empty cell
   cellEmpty: {
     backgroundColor: 'transparent',

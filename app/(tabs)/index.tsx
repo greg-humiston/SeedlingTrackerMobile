@@ -2,6 +2,7 @@ import { View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-nat
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { WateringNotificationBar } from '@/components/WateringNotificationBar';
 import type { SeedlingGrid } from '@/types/home';
 import { GARDEN_GREEN } from '@/data/home';
 import {
@@ -56,7 +57,9 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <View style={styles.container}>
+    <WateringNotificationBar grids={grids} />
+    <ScrollView contentContainerStyle={styles.scrollContent}>
       {/* Branding Header */}
       <View style={styles.headerBanner}>
         <ThemedText style={styles.brandingLabel}>Welcome to</ThemedText>
@@ -127,6 +130,7 @@ export default function HomeScreen() {
         ))}
       </View>
     </ScrollView>
+    </View>
   );
 }
 

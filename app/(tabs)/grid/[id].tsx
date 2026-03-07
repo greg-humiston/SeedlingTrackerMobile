@@ -1,4 +1,4 @@
-import GridPreview, { CellRef } from '@/components/GridPreview';
+import GridPreview, { CellData, CellRef } from '@/components/GridPreview';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EMOJI_MAP, EMOJI_OVERVIEW } from '@/constants/icons';
@@ -28,11 +28,19 @@ function StatCard({ emoji, label, value, color }: Stat) {
   );
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** SelectedSeedling uses `variety` for the display name; CellData requires `name`. */
+function mapCells(cells: (SelectedSeedling | null)[]): (CellData | null)[] {
+  return cells.map((c) => (c ? { ...c, name: c.variety } : null));
+}
+
 // ─── Grid Detail View ─────────────────────────────────────────────────────────
 
-function GridDetailView({ grid }: { grid: SeedlingGrid }) {
+function GridDetailView({ grid, highlightedCellIndex: initialHighlight }: { grid: SeedlingGrid; highlightedCellIndex?: number }) {
   const router = useRouter();
   const { mutate: updateGrid } = useUpdateGrid();
+  const [activeHighlight, setActiveHighlight] = useState<number | undefined>(initialHighlight);
 
   // ── Edit mode ──────────────────────────────────────────────────────────────
 
@@ -114,11 +122,12 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
   const handleUpdateLastWatered = (cellIndex: number, date: string) => {
     const targetCell = grid.gridCells[cellIndex];
     if (!targetCell) return;
+    if (cellIndex === activeHighlight) setActiveHighlight(undefined);
     const updatedGridCells = grid.gridCells.map((cell, i) =>
       i === cellIndex && cell !== null ? { ...cell, lastWateredAt: date } : cell,
     );
     const updatedSeedlings = grid.seedlings.map((s) =>
-      s.name === targetCell.name ? { ...s, lastWateredAt: date } : s,
+      s.variety === targetCell.variety ? { ...s, lastWateredAt: date } : s,
     );
     updateGrid({ gridId: grid.id, updates: { gridCells: updatedGridCells, seedlings: updatedSeedlings } });
   };
@@ -165,13 +174,14 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
         <GridPreview
           rows={grid.rows}
           cols={grid.cols}
-          cells={isEditing ? editCells : grid.gridCells}
+          cells={mapCells(isEditing ? editCells : grid.gridCells)}
           canEdit={isEditing}
           cellRefs={cellRefs}
           onDragEnd={handleDragEnd}
           onSwap={isEditing ? handleSwap : undefined}
           createdAt={grid.createdAt}
           onUpdateLastWatered={isEditing ? undefined : handleUpdateLastWatered}
+          highlightedCellIndex={isEditing ? undefined : activeHighlight}
         />
 
         {/* Edit / Save / Cancel controls */}
@@ -222,9 +232,10 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function GridDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, highlight } = useLocalSearchParams<{ id: string; highlight?: string }>();
   const router  = useRouter();
   const { data: grid, isLoading, isError, error } = useGrid(id ?? '');
+  const highlightedCellIndex = highlight !== undefined ? parseInt(highlight, 10) : undefined;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -254,7 +265,7 @@ export default function GridDetailScreen() {
         </View>
       )}
 
-      {grid && <GridDetailView grid={grid} />}
+      {grid && <GridDetailView grid={grid} highlightedCellIndex={highlightedCellIndex} />}
     </GestureHandlerRootView>
   );
 }

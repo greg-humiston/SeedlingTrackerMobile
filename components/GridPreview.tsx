@@ -45,8 +45,6 @@ import Animated, {
 
 // Grid cells are flex-based and fill the parent width — no fixed pixel size needed.
 
-const LONG_PRESS_MS = 1500;
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 /** Minimal shape required to display a cell — compatible with both SeedlingDraft and Seedling. */
@@ -245,6 +243,7 @@ type DraggableCellProps = {
   cell: CellData;
   canEdit: boolean;
   isSelected: boolean;
+  isHighlighted?: boolean;
   cellRefs: React.MutableRefObject<CellRef[]>;
   onDragEnd: (fromIndex: number, absoluteX: number, absoluteY: number) => void;
   onDragStart: () => void;
@@ -253,16 +252,22 @@ type DraggableCellProps = {
 };
 
 function DraggableCell({
-  index, cell, canEdit, isSelected,
+  index, cell, canEdit, isSelected, isHighlighted,
   cellRefs, onDragEnd, onDragStart, onTap, onLongPress,
 }: DraggableCellProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale      = useSharedValue(1);
 
-  // Quick tap (< 500 ms) fires the tap handler for selection.
+  // Double-tap opens the seedling popup.
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onEnd(() => { runOnJS(onLongPress)(cell, index); });
+
+  // Single tap for cell selection — waits for doubleTap to fail before firing.
   const tap = Gesture.Tap()
-    .maxDuration(500)
+    .numberOfTaps(1)
+    .requireExternalGestureToFail(doubleTap)
     .onEnd(() => { runOnJS(onTap)(index); });
 
   // Pan for drag-and-drop. Scale up on activation, reset when done (success or fail).
@@ -286,20 +291,9 @@ function DraggableCell({
       translateY.value = withSpring(0);
     });
 
-  // Long hold (1 500 ms) opens the seedling popup.
-  // Tap fails at 500 ms maxDuration, Pan fails with no movement — LongPress wins.
-  const longPress = Gesture.LongPress()
-    .minDuration(LONG_PRESS_MS)
-    .onStart(() => {
-      scale.value      = withSpring(1);
-      translateX.value = withSpring(0);
-      translateY.value = withSpring(0);
-      runOnJS(onLongPress)(cell, index);
-    });
-
-  // In edit mode: all three compete; quick tap → tap, drag → pan, long hold → longPress.
-  // In view mode: only long-press is relevant.
-  const gesture = canEdit ? Gesture.Race(tap, pan, longPress) : longPress;
+  // In edit mode: double-tap or pan compete; single tap waits for double-tap to fail.
+  // In view mode: only double-tap is relevant.
+  const gesture = canEdit ? Gesture.Race(doubleTap, tap, pan) : doubleTap;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -319,7 +313,7 @@ function DraggableCell({
     <GestureDetector gesture={gesture}>
       <Animated.View
         ref={(r) => { cellRefs.current[index] = r as unknown as CellRef; }}
-        style={[styles.cell, styles.cellOccupied, isSelected && styles.cellSelected, animatedStyle]}
+        style={[styles.cell, styles.cellOccupied, isSelected && styles.cellSelected, isHighlighted && styles.cellHighlighted, animatedStyle]}
       >
         <ThemedText style={styles.cellEmoji}>{cell.emoji}</ThemedText>
         <ThemedText style={styles.cellName} numberOfLines={1}>
@@ -372,6 +366,11 @@ export type GridPreviewProps = {
    * Signature: (cellIndex, isoDate) => void
    */
   onUpdateLastWatered?: (cellIndex: number, date: string) => void;
+  /**
+   * Index of the cell to visually highlight (e.g. when navigating from a
+   * watering notification). Ignored in edit mode.
+   */
+  highlightedCellIndex?: number;
 };
 
 export default function GridPreview({
@@ -384,6 +383,7 @@ export default function GridPreview({
   onSwap,
   createdAt,
   onUpdateLastWatered,
+  highlightedCellIndex,
 }: GridPreviewProps) {
   const internalCellRefs = useRef<CellRef[]>([]);
   const cellRefs = externalCellRefs ?? internalCellRefs;
@@ -420,8 +420,8 @@ export default function GridPreview({
       <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Grid Preview</ThemedText>
       <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
         {canEdit
-          ? 'Tap to select · Tap another to swap · Drag to rearrange · Hold to inspect'
-          : 'Hold a seedling to inspect'}
+          ? 'Tap to select · Tap another to swap · Drag to rearrange · Double-tap to inspect'
+          : 'Double-tap a seedling to inspect'}
       </ThemedText>
       <View style={styles.gridContainer}>
         {Array.from({ length: rows }).map((_, r) => (
@@ -436,6 +436,7 @@ export default function GridPreview({
                   cell={cell}
                   canEdit={canEdit}
                   isSelected={selectedIndex === idx}
+                  isHighlighted={!canEdit && highlightedCellIndex === idx}
                   cellRefs={cellRefs}
                   onDragEnd={dragEnd}
                   onDragStart={() => setSelectedIndex(null)}
