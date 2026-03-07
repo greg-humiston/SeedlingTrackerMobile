@@ -323,6 +323,31 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     color: GARDEN_GREEN,
   },
+  plantingReadyItem: {
+    backgroundColor: '#EAF7EC',
+    borderBottomColor: '#C8E6C9',
+  },
+  plantingBadgeReady: {
+    backgroundColor: '#C8E6C9',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: GARDEN_GREEN,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  plantingBadgeWait: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFC107',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  plantingBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#555',
+  },
 
   // ── Add seedling button ───────────────────────────────────────────────────────
   addButton: {

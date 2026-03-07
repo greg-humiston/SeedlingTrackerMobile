@@ -13,6 +13,7 @@ import {
 } from '@/constants/icons';
 import { styles } from '@/styles/home';
 import { useGrids } from '@/hooks/useGrids';
+import PlantingSlideshow from '@/components/PlantingSlideshow';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -88,6 +89,9 @@ export default function HomeScreen() {
           <ThemedText style={styles.summaryLabel}>Need Water</ThemedText>
         </View>
       </ThemedView>
+
+      {/* Planting Slideshow */}
+      <PlantingSlideshow />
 
       {/* Grid List */}
       <ThemedView style={styles.section}>
