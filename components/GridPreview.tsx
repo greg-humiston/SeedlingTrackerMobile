@@ -322,14 +322,6 @@ function DraggableCell({
         style={[styles.cell, styles.cellOccupied, isSelected && styles.cellSelected, animatedStyle]}
       >
         <ThemedText style={styles.cellEmoji}>{cell.emoji}</ThemedText>
-        <ThemedText style={styles.cellName} numberOfLines={1}>
-          {cell.name}
-        </ThemedText>
-        <View style={styles.cellStageBadge}>
-          <ThemedText style={styles.cellStageBadgeText}>
-            {cell.stage}
-          </ThemedText>
-        </View>
       </Animated.View>
     </GestureDetector>
   );

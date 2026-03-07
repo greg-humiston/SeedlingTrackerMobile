@@ -145,8 +145,7 @@ export const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   cellEmoji: {
-    fontSize: 32,
-    marginBottom: 3,
+    fontSize: 38,
   },
   cellName: {
     fontSize: 10,

@@ -35,10 +35,27 @@ export const EMOJI_POT           = '🪴';
 
 // ─── Vegetable / fruit emojis ─────────────────────────────────────────────────
 
-export const EMOJI_TOMATO   = '🍅';
-export const EMOJI_LEAFY    = '🥬';
-export const EMOJI_CORN     = '🌽';
-export const EMOJI_CARROT   = '🥕';
+export const EMOJI_TOMATO       = '🍅';
+export const EMOJI_LEAFY        = '🥬';
+export const EMOJI_CORN         = '🌽';
+export const EMOJI_CARROT       = '🥕';
+export const EMOJI_PEPPER       = '🫑';
+export const EMOJI_HOT_PEPPER   = '🌶️';
+export const EMOJI_EGGPLANT     = '🍆';
+export const EMOJI_POTATO       = '🥔';
+export const EMOJI_SWEET_POTATO = '🍠';
+export const EMOJI_BROCCOLI     = '🥦';
+export const EMOJI_CUCUMBER     = '🥒';
+export const EMOJI_ONION        = '🧅';
+export const EMOJI_GARLIC       = '🧄';
+export const EMOJI_BEAN         = '🫘';
+export const EMOJI_PEA          = '🫛';
+export const EMOJI_MUSHROOM     = '🍄';
+export const EMOJI_STRAWBERRY   = '🍓';
+export const EMOJI_WATERMELON   = '🍉';
+export const EMOJI_PUMPKIN      = '🎃';
+export const EMOJI_BLUEBERRY    = '🫐';
+export const EMOJI_CHERRY       = '🍒';
 
 // ─── Weather / environment emojis ─────────────────────────────────────────────
 
@@ -77,6 +94,14 @@ export const FOOTER_SOIL: string[] = [
 
 /** Ordered emoji palette shown in the seedling emoji picker. */
 export const EMOJI_OPTIONS: string[] = [
-  EMOJI_SEEDLING, EMOJI_HERB, EMOJI_LEAF, EMOJI_TOMATO, EMOJI_SUNFLOWER, EMOJI_LAVENDER,
-  EMOJI_FLOWER_PINK, EMOJI_FLOWER_YELLOW, EMOJI_FLOWER_RED, EMOJI_LEAFY, EMOJI_CORN, EMOJI_CARROT,
+  // Herbs & greens
+  EMOJI_SEEDLING, EMOJI_HERB, EMOJI_LEAF, EMOJI_LEAFY, EMOJI_POT,
+  // Vegetables
+  EMOJI_TOMATO, EMOJI_CARROT, EMOJI_CORN, EMOJI_PEPPER, EMOJI_HOT_PEPPER, EMOJI_EGGPLANT,
+  EMOJI_POTATO, EMOJI_SWEET_POTATO, EMOJI_BROCCOLI, EMOJI_CUCUMBER,
+  EMOJI_ONION, EMOJI_GARLIC, EMOJI_BEAN, EMOJI_PEA, EMOJI_MUSHROOM,
+  // Fruits
+  EMOJI_STRAWBERRY, EMOJI_WATERMELON, EMOJI_PUMPKIN, EMOJI_BLUEBERRY, EMOJI_CHERRY,
+  // Flowers
+  EMOJI_SUNFLOWER, EMOJI_LAVENDER, EMOJI_FLOWER_PINK, EMOJI_FLOWER_YELLOW, EMOJI_FLOWER_RED,
 ];
