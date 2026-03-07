@@ -20,13 +20,22 @@ import {
 
 const ZONE_STORAGE_KEY = '@seedling_tracker/zone';
 
+function getStartLocation(whereToStart: string): 'Indoors' | 'Outdoors' | 'Indoors or Outdoors' {
+  const v = whereToStart.toLowerCase();
+  if (v.startsWith('indoors or') || v.startsWith('indoors and')) return 'Indoors or Outdoors';
+  if (v.startsWith('indoors')) return 'Indoors';
+  return 'Outdoors';
+}
+
 function getPlantingStatus(
   variety: string,
+  zone: ZoneBand | null,
   inSeasonNames: Set<string>,
   allCalendarNames: Set<string>,
-): 'ready' | 'not-in-season' | null {
+): 'ready' | 'not-in-season' | 'no-zone' | null {
   const key = variety.toLowerCase();
   if (!allCalendarNames.has(key)) return null;
+  if (!zone) return 'no-zone';
   return inSeasonNames.has(key) ? 'ready' : 'not-in-season';
 }
 
@@ -109,7 +118,7 @@ export function SeedlingSelector({
             </View>
           ) : (
             filtered.map((item) => {
-              const status = getPlantingStatus(item.variety, inSeasonNames, allCalendarNames);
+              const status = getPlantingStatus(item.variety, zone, inSeasonNames, allCalendarNames);
               return (
                 <TouchableOpacity
                   key={item.variety}
@@ -125,6 +134,11 @@ export function SeedlingSelector({
                   <View style={styles.dropdownItemText}>
                     <ThemedText style={styles.dropdownItemName}>{item.variety}</ThemedText>
                   </View>
+                  <View style={styles.plantingBadgeLocation}>
+                    <ThemedText style={styles.plantingBadgeText}>
+                      {getStartLocation(item.whereToStart)}
+                    </ThemedText>
+                  </View>
                   {status === 'ready' && (
                     <View style={styles.plantingBadgeReady}>
                       <ThemedText style={styles.plantingBadgeText}>Plant now</ThemedText>
@@ -133,6 +147,11 @@ export function SeedlingSelector({
                   {status === 'not-in-season' && (
                     <View style={styles.plantingBadgeWait}>
                       <ThemedText style={styles.plantingBadgeText}>Not in season</ThemedText>
+                    </View>
+                  )}
+                  {status === 'no-zone' && (
+                    <View style={styles.plantingBadgeNoZone}>
+                      <ThemedText style={styles.plantingBadgeText}>Set zone</ThemedText>
                     </View>
                   )}
                 </TouchableOpacity>

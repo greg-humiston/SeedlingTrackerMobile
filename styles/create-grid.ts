@@ -343,6 +343,22 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3,
   },
+  plantingBadgeNoZone: {
+    backgroundColor: '#F3F0FF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#9E86FF',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  plantingBadgeLocation: {
+    backgroundColor: '#E8F0FE',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#90A8E8',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
   plantingBadgeText: {
     fontSize: 10,
     fontWeight: '600',
