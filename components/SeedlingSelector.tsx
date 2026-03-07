@@ -1,7 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styles } from '@/styles/create-grid';
 import { selectorStyles as s } from '@/styles/seedling-selector';
 import type { Seedling } from '@/types/home';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   TextInput,
   TouchableOpacity,
@@ -10,6 +11,24 @@ import {
 import { AddCustomSeedlingModal } from './AddCustomSeedlingModal';
 import { ThemedText } from './themed-text';
 import { useSeedlings, useAddSeedling } from '@/hooks/useSeedlings';
+import {
+  PLANTS,
+  ZONE_BANDS,
+  getPlantsForZoneAndMonth,
+  type ZoneBand,
+} from '@/data/planting-calendar';
+
+const ZONE_STORAGE_KEY = '@seedling_tracker/zone';
+
+function getPlantingStatus(
+  variety: string,
+  inSeasonNames: Set<string>,
+  allCalendarNames: Set<string>,
+): 'ready' | 'not-in-season' | null {
+  const key = variety.toLowerCase();
+  if (!allCalendarNames.has(key)) return null;
+  return inSeasonNames.has(key) ? 'ready' : 'not-in-season';
+}
 
 export function SeedlingSelector({
   onSelect,
@@ -22,6 +41,23 @@ export function SeedlingSelector({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [zone, setZone] = useState<ZoneBand | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(ZONE_STORAGE_KEY).then((stored) => {
+      if (stored && ZONE_BANDS.includes(stored as ZoneBand)) {
+        setZone(stored as ZoneBand);
+      }
+    });
+  }, []);
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+
+  const allCalendarNames = new Set(PLANTS.map((p) => p.name.toLowerCase()));
+  const inSeasonNames = zone
+    ? new Set(getPlantsForZoneAndMonth(zone, currentMonth).map((p) => p.name.toLowerCase()))
+    : new Set<string>();
 
   const catalog = seedlings ?? [];
 
@@ -72,23 +108,36 @@ export function SeedlingSelector({
               <ThemedText style={styles.dropdownPlaceholder}>{'No results for "' + query + '"'}</ThemedText>
             </View>
           ) : (
-            filtered.map((item) => (
-              <TouchableOpacity
-                key={item.variety}
-                style={[styles.dropdownItem]}
-                onPress={() => {
-                  setOpen(false);
-                  setQuery('');
-                  onSelect(item);
-                }}
-                activeOpacity={0.75}
-              >
-                <ThemedText style={styles.dropdownItemEmoji}>{item.emoji}</ThemedText>
-                <View style={styles.dropdownItemText}>
-                  <ThemedText style={styles.dropdownItemName}>{item.variety}</ThemedText>
-                </View>
-              </TouchableOpacity>
-            ))
+            filtered.map((item) => {
+              const status = getPlantingStatus(item.variety, inSeasonNames, allCalendarNames);
+              return (
+                <TouchableOpacity
+                  key={item.variety}
+                  style={[styles.dropdownItem, status === 'ready' && styles.plantingReadyItem]}
+                  onPress={() => {
+                    setOpen(false);
+                    setQuery('');
+                    onSelect(item);
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <ThemedText style={styles.dropdownItemEmoji}>{item.emoji}</ThemedText>
+                  <View style={styles.dropdownItemText}>
+                    <ThemedText style={styles.dropdownItemName}>{item.variety}</ThemedText>
+                  </View>
+                  {status === 'ready' && (
+                    <View style={styles.plantingBadgeReady}>
+                      <ThemedText style={styles.plantingBadgeText}>Plant now</ThemedText>
+                    </View>
+                  )}
+                  {status === 'not-in-season' && (
+                    <View style={styles.plantingBadgeWait}>
+                      <ThemedText style={styles.plantingBadgeText}>Not in season</ThemedText>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })
           )}
         </View>
       )}
