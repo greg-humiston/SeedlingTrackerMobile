@@ -25,7 +25,7 @@ export function SeedPacketPicker({ onSeedlingExtracted }: Props) {
 
 Use these exact values where applicable:
 - type: one of ["Herb", "Vegetable", "Leafy Green", "Flower", "Fruit", "Root Vegetable", "Lettuce", "Other"]
-- whereToStart: one of ["Indoors", "Outdoors", "Indoors or Outdoors"]
+- whereToStart: one of ["Indoors", "Outdoors", "Both"]
 - season: one of ["Warm", "Cool", "Cool to Warm"]
 - frostTolerance: true or false
 

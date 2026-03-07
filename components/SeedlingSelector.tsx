@@ -1,7 +1,14 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  PLANTS,
+  ZONE_BANDS,
+  getPlantsForZoneAndMonth,
+  type ZoneBand,
+} from '@/data/planting-calendar';
+import { useAddSeedling, useSeedlings } from '@/hooks/useSeedlings';
 import { styles } from '@/styles/create-grid';
 import { selectorStyles as s } from '@/styles/seedling-selector';
 import type { Seedling } from '@/types/home';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import {
   TextInput,
@@ -10,19 +17,12 @@ import {
 } from 'react-native';
 import { AddCustomSeedlingModal } from './AddCustomSeedlingModal';
 import { ThemedText } from './themed-text';
-import { useSeedlings, useAddSeedling } from '@/hooks/useSeedlings';
-import {
-  PLANTS,
-  ZONE_BANDS,
-  getPlantsForZoneAndMonth,
-  type ZoneBand,
-} from '@/data/planting-calendar';
 
 const ZONE_STORAGE_KEY = '@seedling_tracker/zone';
 
-function getStartLocation(whereToStart: string): 'Indoors' | 'Outdoors' | 'Indoors or Outdoors' {
+function getStartLocation(whereToStart: string): 'Indoors' | 'Outdoors' | 'Both' {
   const v = whereToStart.toLowerCase();
-  if (v.startsWith('indoors or') || v.startsWith('indoors and')) return 'Indoors or Outdoors';
+  if (v.startsWith('indoors or') || v.startsWith('indoors and')) return 'Both';
   if (v.startsWith('indoors')) return 'Indoors';
   return 'Outdoors';
 }

@@ -15,7 +15,7 @@ import { ThemedText } from './themed-text';
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TYPE_OPTIONS = ['Herb', 'Vegetable', 'Leafy Green', 'Flower', 'Fruit', 'Root Vegetable', 'Lettuce', 'Other'];
-const WHERE_OPTIONS = ['Indoors', 'Outdoors', 'Indoors or Outdoors'];
+const WHERE_OPTIONS = ['Indoors', 'Outdoors', 'Both'];
 const SEASON_OPTIONS = ['Warm', 'Cool', 'Cool to Warm'];
 
 const EMPTY_DRAFT: DraftSeedling = {
