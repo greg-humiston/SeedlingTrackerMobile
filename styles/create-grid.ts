@@ -1,7 +1,7 @@
-import { StyleSheet } from 'react-native';
 import {
   CREAM, GARDEN_GREEN, LEAF_GREEN, LIGHT_GREEN, SOIL_BROWN,
 } from '@/data/home';
+import { StyleSheet } from 'react-native';
 
 const ERROR_RED    = '#C0392B';
 const ERROR_BG     = '#FDF0EF';
@@ -146,6 +146,8 @@ export const styles = StyleSheet.create({
   },
   cellEmoji: {
     fontSize: 38,
+    paddingTop: 25,
+    paddingBottom: 25 
   },
   cellName: {
     fontSize: 10,
