@@ -50,6 +50,21 @@ export const editStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  exportButton: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#EAF4FB',
+    borderWidth: 1,
+    borderColor: '#5BA4CF',
+  },
+  exportButtonText: {
+    color: '#2980B9',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 export const styles = StyleSheet.create({

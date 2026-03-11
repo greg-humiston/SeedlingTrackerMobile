@@ -99,11 +99,29 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
   sectionTitle: {
     fontSize: 17,
     fontWeight: '700',
     color: LEAF_GREEN,
-    marginBottom: 2,
+  },
+  importButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: '#EAF4FB',
+    borderWidth: 1,
+    borderColor: '#5BA4CF',
+  },
+  importButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2980B9',
   },
   sectionHint: {
     fontSize: 12,

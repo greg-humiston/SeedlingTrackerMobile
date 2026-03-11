@@ -5,11 +5,13 @@ import { EMOJI_MAP, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
 import { useGrid, useUpdateGrid } from '@/hooks/useGrids';
 import { editStyles, styles } from '@/styles/grid-detail';
+import { exportGrid } from '@/services/gridExport';
 import type { SeedlingGrid, SelectedSeedling, Stat } from '@/types/home';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   TouchableOpacity,
   View,
@@ -38,6 +40,7 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editCells, setEditCells] = useState<(SelectedSeedling | null)[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
   const cellRefs = useRef<CellRef[]>([]);
 
   const handleEditStart = () => {
@@ -118,9 +121,22 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
       i === cellIndex && cell !== null ? { ...cell, lastWateredAt: date } : cell,
     );
     const updatedSeedlings = grid.seedlings.map((s) =>
-      s.name === targetCell.name ? { ...s, lastWateredAt: date } : s,
+      s.variety === targetCell.variety ? { ...s, lastWateredAt: date } : s,
     );
     updateGrid({ gridId: grid.id, updates: { gridCells: updatedGridCells, seedlings: updatedSeedlings } });
+  };
+
+  // ── Export ─────────────────────────────────────────────────────────────────
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await exportGrid(grid);
+    } catch (err) {
+      Alert.alert('Export failed', err instanceof Error ? err.message : 'An error occurred.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -202,6 +218,18 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
           </View>
         )}
       </ThemedView>
+
+      {/* Export */}
+      <TouchableOpacity
+        style={editStyles.exportButton}
+        onPress={handleExport}
+        disabled={isExporting}
+        activeOpacity={0.8}
+      >
+        <ThemedText style={editStyles.exportButtonText}>
+          {isExporting ? 'Exporting…' : '📤 Export Garden'}
+        </ThemedText>
+      </TouchableOpacity>
 
       {/* Tip of the Day */}
       <View style={styles.tipCard}>

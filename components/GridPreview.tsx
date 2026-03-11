@@ -51,7 +51,7 @@ const LONG_PRESS_MS = 1500;
 
 /** Minimal shape required to display a cell — compatible with both SeedlingDraft and Seedling. */
 export type CellData = {
-  name: string;
+  variety: string;
   emoji: string;
   stage: string;
   /** Accepts both numeric (Seedling) and string (SeedlingDraft) values. */
@@ -141,7 +141,7 @@ function SeedlingPreviewPopup({
           <View style={popupStyles.header}>
             <ThemedText style={popupStyles.headerEmoji}>{cell.emoji}</ThemedText>
             <View style={popupStyles.headerText}>
-              <ThemedText style={popupStyles.headerName}>{cell.name}</ThemedText>
+              <ThemedText style={popupStyles.headerName}>{cell.variety}</ThemedText>
               <View style={popupStyles.stageBadge}>
                 <ThemedText style={popupStyles.stageBadgeText}>{cell.stage}</ThemedText>
               </View>
@@ -423,7 +423,7 @@ export default function GridPreview({
               const cell = cells[idx] ?? null;
               return cell ? (
                 <DraggableCell
-                  key={`${idx}-${cell.name}`}
+                  key={`${idx}-${cell.variety}`}
                   index={idx}
                   cell={cell}
                   canEdit={canEdit}

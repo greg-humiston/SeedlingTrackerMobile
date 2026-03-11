@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,7 +12,8 @@ import {
   FOOTER_SOIL,
 } from '@/constants/icons';
 import { styles } from '@/styles/home';
-import { useGrids } from '@/hooks/useGrids';
+import { useGrids, useCreateGrid } from '@/hooks/useGrids';
+import { importGridFromFile } from '@/services/gridExport';
 import PlantingSlideshow from '@/components/PlantingSlideshow';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -49,6 +50,24 @@ function GridCard({ name, emoji, description, seedlings, stats, onPress }: GridC
 export default function HomeScreen() {
   const router = useRouter();
   const { data: grids, isLoading, isError, error, refetch } = useGrids();
+  const { mutate: createGrid } = useCreateGrid();
+
+  const handleImport = async () => {
+    const result = await importGridFromFile();
+    if (result.ok === false) {
+      if (result.reason === 'cancelled') return;
+      Alert.alert('Import failed', result.message ?? 'Could not import garden.');
+      return;
+    }
+    createGrid(result.grid as Omit<SeedlingGrid, 'id'>, {
+      onSuccess: (created) => {
+        router.push({ pathname: '/(tabs)/grid/[id]', params: { id: created.id } });
+      },
+      onError: () => {
+        Alert.alert('Import failed', 'Could not save the imported garden.');
+      },
+    });
+  };
 
   const totalSeedlings = (grids ?? []).reduce((sum, g) => sum + g.seedlings.length, 0);
   const totalNeedWater = (grids ?? []).reduce(
@@ -95,7 +114,12 @@ export default function HomeScreen() {
 
       {/* Grid List */}
       <ThemedView style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>{EMOJI_HERB} My Gardens</ThemedText>
+        <View style={styles.sectionHeader}>
+          <ThemedText style={styles.sectionTitle}>{EMOJI_HERB} My Gardens</ThemedText>
+          <TouchableOpacity style={styles.importButton} onPress={handleImport} activeOpacity={0.8}>
+            <ThemedText style={styles.importButtonText}>📥 Import</ThemedText>
+          </TouchableOpacity>
+        </View>
         <ThemedText style={styles.sectionHint}>Tap a garden to view its seedlings</ThemedText>
 
         {isLoading && (
