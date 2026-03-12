@@ -1,5 +1,4 @@
-import GridPreview, { CellRef } from '@/components/GridPreview';
-import SeedlingSelector from '@/components/SeedlingSelector';
+import GridEdit from '@/components/GridEdit';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
@@ -19,9 +18,9 @@ import {
 } from '@/data/home';
 import { useCreateGrid } from '@/hooks/useGrids';
 import { styles } from '@/styles/create-grid';
-import type { Seedling, SeedlingGrid, SelectedSeedling } from '@/types/home';
+import type { SeedlingGrid, SelectedSeedling } from '@/types/home';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,16 +35,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const DEFAULT_COLS = 4;
 const DEFAULT_ROWS = 3;
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type DraftSeedling = {
-  selectedSeedling: Seedling | null;
-};
-
-const EMPTY_SEEDLING: DraftSeedling = {
-  selectedSeedling: null,
-};
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -178,21 +167,15 @@ export default function GridBuilderScreen() {
   const [gridEmoji, setGridEmoji]             = useState(EMOJI_SEEDLING);
   const [submitted, setSubmitted]             = useState(false);
 
-  // Seedling draft
-  const [draft, setDraft] = useState<DraftSeedling>(EMPTY_SEEDLING);
-
   // Flat grid cells: index = row * cols + col
-  const [cells, setCells] = useState<SelectedSeedling[]>(
+  const [cells, setCells] = useState<(SelectedSeedling | null)[]>(
     () => Array(DEFAULT_ROWS * DEFAULT_COLS).fill(null)
   );
-
-  // Refs to each cell View so we can call .measure() for screen-space hit detection
-  const cellRefs = useRef<CellRef[]>([]);
+  const [seedlings, setSeedlings] = useState<SelectedSeedling[]>([]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const totalCells    = rows * cols;
   const seedlingCount = cells.filter(Boolean).length;
-  const gridFull      = seedlingCount === totalCells;
 
   const errors = {
     gridName:        !gridName.trim()        ? 'Garden name is required.'  : undefined,
@@ -206,8 +189,8 @@ export default function GridBuilderScreen() {
   const canDecrementCols = cols > 1 && seedlingCount < rows * (cols - 1);
   const canDecrementRows = rows > 1 && seedlingCount < (rows - 1) * cols;
 
-  const resizeCells = (newRows: number, newCols: number, currentCells: SelectedSeedling[]) => {
-    const result: SelectedSeedling[] = Array(newRows * newCols).fill(null);
+  const resizeCells = (newRows: number, newCols: number, currentCells: (SelectedSeedling | null)[]) => {
+    const result: (SelectedSeedling | null)[] = Array(newRows * newCols).fill(null);
     for (let r = 0; r < Math.min(rows, newRows); r++) {
       for (let c = 0; c < Math.min(cols, newCols); c++) {
         result[r * newCols + c] = currentCells[r * cols + c] ?? null;
@@ -242,82 +225,14 @@ export default function GridBuilderScreen() {
     setCells((prev) => resizeCells(newRows, cols, prev));
   };
 
-  // ── Add seedling ───────────────────────────────────────────────────────────
-  const handleAddSeedling = (seedling: Seedling) => {
-    if (!seedling) {
-      Alert.alert('No Seedling selected', 'Please select a seedling from the dropdown.');
-      return;
-    }
+  // ── GridEdit onChange ──────────────────────────────────────────────────────
 
-    const selectedSeedling = {
-      ...seedling,
-      stage: 'Germinating',
-      daysOld: '0'
-    } as SelectedSeedling;
-
-    if (gridFull) return;
-    const firstEmpty = cells.findIndex((c) => c === null);
-    if (firstEmpty === -1) return;
-    setCells((prev) => {
-      const next = [...prev];
-      next[firstEmpty] = selectedSeedling;
-      return next;
-    });
-    setDraft(EMPTY_SEEDLING);
-  };
-
-  // ── Swap cells (tap-to-select) ─────────────────────────────────────────────
-
-  const handleSwap = (fromIndex: number, toIndex: number) => {
-    setCells((prev) => {
-      const next = [...prev];
-      const temp      = next[fromIndex];
-      next[fromIndex] = next[toIndex];
-      next[toIndex]   = temp;
-      return next;
-    });
-  };
-
-  // ── Drag-and-drop ──────────────────────────────────────────────────────────
-
-  const handleDragEnd = (fromIndex: number, absoluteX: number, absoluteY: number) => {
-    // measure() returns screen-relative coordinates — same space as absoluteX/Y.
-    // We fan out measure() calls for every cell and collect results, then pick
-    // the hit cell once all measurements are in.
-    const total = cellRefs.current.length;
-    if (total === 0) return;
-
-    let remaining = total;
-    let toIndex: number | null = null;
-
-    const checkDone = () => {
-      remaining -= 1;
-      if (remaining > 0) return;
-      // All measured — commit swap if a valid target was found
-      if (toIndex === null || toIndex === fromIndex) return;
-      setCells((prev) => {
-        const next = [...prev];
-        const temp      = next[fromIndex];
-        next[fromIndex] = next[toIndex!];
-        next[toIndex!]  = temp;
-        return next;
-      });
-    };
-
-    cellRefs.current.forEach((ref, i) => {
-      if (!ref) { remaining -= 1; return; }
-      ref.measure((_fx, _fy, width, height, pageX, pageY) => {
-        if (
-          absoluteX >= pageX &&
-          absoluteX <= pageX + width &&
-          absoluteY >= pageY &&
-          absoluteY <= pageY + height
-        ) {
-          toIndex = i;
-        }
-        checkDone();
-      });
-    });
+  const handleGridChange = (
+    newCells: (SelectedSeedling | null)[],
+    newSeedlings: SelectedSeedling[],
+  ) => {
+    setCells(newCells);
+    setSeedlings(newSeedlings);
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -326,7 +241,7 @@ export default function GridBuilderScreen() {
     setSubmitted(true);
     if (!canCreate) return;
 
-    const filledSeedlings = cells.filter((c): c is NonNullable<typeof c> => c !== null);
+    const filledSeedlings = cells.filter((c): c is SelectedSeedling => c !== null);
 
     const newGrid: Omit<SeedlingGrid, 'id'> = {
       createdAt:   new Date().toISOString(),
@@ -361,10 +276,10 @@ export default function GridBuilderScreen() {
         setGridDescription('');
         setGridEmoji(EMOJI_SEEDLING);
         setSubmitted(false);
-        setDraft(EMPTY_SEEDLING);
         setCols(DEFAULT_COLS);
         setRows(DEFAULT_ROWS);
         setCells(Array(DEFAULT_ROWS * DEFAULT_COLS).fill(null));
+        setSeedlings([]);
         router.push({ pathname: '/(tabs)/grid/[id]', params: { id: created.id } });
       },
       onError: (err) => {
@@ -413,14 +328,6 @@ export default function GridBuilderScreen() {
           <EmojiSelector selected={gridEmoji} onSelect={setGridEmoji} />
         </ThemedView>
 
-        {/* Add Seedling */}
-        <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>{EMOJI_SEEDLING} Add a Seedling</ThemedText>
-          <SeedlingSelector
-            onSelect={handleAddSeedling}
-          />
-        </ThemedView>
-
         {/* Grid Size */}
         <ThemedView style={styles.section}>
           <ThemedText style={styles.sectionTitle}>{EMOJI_CHART} Grid Size</ThemedText>
@@ -443,14 +350,13 @@ export default function GridBuilderScreen() {
           </ThemedText>
         </ThemedView>
 
-        {/* Grid Preview */}
-        <GridPreview
+        {/* Grid Editor */}
+        <GridEdit
           rows={rows}
           cols={cols}
           cells={cells}
-          cellRefs={cellRefs}
-          onDragEnd={handleDragEnd}
-          onSwap={handleSwap}
+          seedlings={seedlings}
+          onChange={handleGridChange}
         />
 
         {/* Validation Checklist */}

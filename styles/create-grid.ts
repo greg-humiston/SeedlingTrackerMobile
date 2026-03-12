@@ -485,4 +485,45 @@ export const styles = StyleSheet.create({
   soilEmoji: {
     fontSize: 20,
   },
+
+  // ── GridEdit trash drop zone ───────────────────────────────────────────────
+  trashZone: {
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    flexDirection: 'row' as const,
+    gap: 8,
+    backgroundColor: '#FDF0F0',
+    borderWidth: 2,
+    borderColor: '#E57373',
+    borderStyle: 'dashed' as const,
+  },
+  trashZoneActive: {
+    backgroundColor: '#FDDEDE',
+    borderColor: '#C62828',
+    borderStyle: 'solid' as const,
+  },
+  trashZoneText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#C62828',
+  },
+
+  // ── GridEdit remove button ─────────────────────────────────────────────────
+  removeButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#FDF0F0',
+    borderWidth: 1,
+    borderColor: '#E57373',
+  },
+  removeButtonText: {
+    color: '#C62828',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });

@@ -1,18 +1,21 @@
-import GridPreview, { CellRef } from '@/components/GridPreview';
+import GridEdit from '@/components/GridEdit';
+import GridPreview from '@/components/GridPreview';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { EMOJI_MAP, EMOJI_OVERVIEW } from '@/constants/icons';
+import { EMOJI_MAP, EMOJI_OPTIONS, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
 import { useGrid, useUpdateGrid } from '@/hooks/useGrids';
-import { editStyles, styles } from '@/styles/grid-detail';
 import { exportGrid } from '@/services/gridExport';
+import { editFormStyles } from '@/styles/grid-edit-form';
+import { editStyles, styles } from '@/styles/grid-detail';
 import type { SeedlingGrid, SelectedSeedling, Stat } from '@/types/home';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -36,80 +39,65 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
   const router = useRouter();
   const { mutate: updateGrid } = useUpdateGrid();
 
-  // ── Edit mode ──────────────────────────────────────────────────────────────
+  // ── Edit mode state ────────────────────────────────────────────────────────
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editCells, setEditCells] = useState<(SelectedSeedling | null)[]>([]);
   const [isExporting, setIsExporting] = useState(false);
-  const cellRefs = useRef<CellRef[]>([]);
+
+  // Editable metadata
+  const [editName, setEditName]               = useState('');
+  const [editEmoji, setEditEmoji]             = useState('');
+  const [editDescription, setEditDescription] = useState('');
+
+  // Editable grid data (controlled by GridEdit)
+  const [editCells, setEditCells]         = useState<(SelectedSeedling | null)[]>([]);
+  const [editSeedlings, setEditSeedlings] = useState<SelectedSeedling[]>([]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleEditStart = () => {
+    setEditName(grid.name);
+    setEditEmoji(grid.emoji);
+    setEditDescription(grid.description);
     setEditCells([...grid.gridCells]);
+    setEditSeedlings([...grid.seedlings]);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
-    setEditCells([]);
     setIsEditing(false);
   };
 
   const handleSave = () => {
     updateGrid(
-      { gridId: grid.id, updates: { gridCells: editCells } },
-      // Exit edit mode only after the mutation-level onSuccess has already
-      // written the updated grid into the detail cache via setQueryData.
+      {
+        gridId: grid.id,
+        updates: {
+          name:        editName.trim() || grid.name,
+          emoji:       editEmoji,
+          description: editDescription.trim() || grid.description,
+          header: {
+            ...grid.header,
+            title: `${editEmoji} ${editName.trim() || grid.name}`,
+          },
+          gridCells: editCells,
+          seedlings:  editSeedlings,
+          stats: [
+            { ...grid.stats[0], value: String(editSeedlings.length) },
+            ...grid.stats.slice(1),
+          ],
+        },
+      },
       { onSuccess: () => setIsEditing(false) },
     );
   };
 
-  // ── Tap-to-select swap ─────────────────────────────────────────────────────
-
-  const handleSwap = (fromIndex: number, toIndex: number) => {
-    setEditCells((prev) => {
-      const next = [...prev];
-      const temp      = next[fromIndex];
-      next[fromIndex] = next[toIndex];
-      next[toIndex]   = temp;
-      return next;
-    });
-  };
-
-  // ── Drag-and-drop ──────────────────────────────────────────────────────────
-
-  const handleDragEnd = (fromIndex: number, absoluteX: number, absoluteY: number) => {
-    const total = cellRefs.current.length;
-    if (total === 0) return;
-
-    let remaining = total;
-    let toIndex: number | null = null;
-
-    const checkDone = () => {
-      remaining -= 1;
-      if (remaining > 0) return;
-      if (toIndex === null || toIndex === fromIndex) return;
-      setEditCells((prev) => {
-        const next = [...prev];
-        const temp      = next[fromIndex];
-        next[fromIndex] = next[toIndex!];
-        next[toIndex!]  = temp;
-        return next;
-      });
-    };
-
-    cellRefs.current.forEach((ref, i) => {
-      if (!ref) { remaining -= 1; return; }
-      ref.measure((_fx, _fy, width, height, pageX, pageY) => {
-        if (
-          absoluteX >= pageX &&
-          absoluteX <= pageX + width &&
-          absoluteY >= pageY &&
-          absoluteY <= pageY + height
-        ) {
-          toIndex = i;
-        }
-        checkDone();
-      });
-    });
+  const handleGridChange = (
+    newCells: (SelectedSeedling | null)[],
+    newSeedlings: SelectedSeedling[],
+  ) => {
+    setEditCells(newCells);
+    setEditSeedlings(newSeedlings);
   };
 
   // ── Last-watered update (view mode only) ───────────────────────────────────
@@ -141,8 +129,15 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  const displayName  = isEditing ? editName  : grid.name;
+  const displayEmoji = isEditing ? editEmoji : grid.emoji;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
       {/* Header Banner */}
       <View style={styles.headerBanner}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -151,7 +146,9 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
         <View style={styles.headerRow}>
           <ThemedText style={styles.headerGreeting}>{grid.header.greeting}</ThemedText>
         </View>
-        <ThemedText style={styles.headerTitle}>{grid.header.title}</ThemedText>
+        <ThemedText style={styles.headerTitle}>
+          {displayEmoji} {displayName}
+        </ThemedText>
         <ThemedText style={styles.headerSubtitle}>{grid.header.subtitle}</ThemedText>
         <View style={styles.plantRow}>
           {grid.header.decorativeIcons.map((icon, i) => (
@@ -170,66 +167,118 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
         </View>
       </ThemedView>
 
-      {/* 2-D Grid Preview */}
-      <ThemedView style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Seedling Grid</ThemedText>
-        <ThemedText style={styles.sectionHint}>
-          {grid.cols} col{grid.cols !== 1 ? 's' : ''} ×{' '}
-          {grid.rows} row{grid.rows !== 1 ? 's' : ''} ·{' '}
-          {grid.seedlings.length} seedling{grid.seedlings.length !== 1 ? 's' : ''} placed
-        </ThemedText>
-        <GridPreview
-          rows={grid.rows}
-          cols={grid.cols}
-          cells={isEditing ? editCells : grid.gridCells}
-          canEdit={isEditing}
-          cellRefs={cellRefs}
-          onDragEnd={handleDragEnd}
-          onSwap={isEditing ? handleSwap : undefined}
-          createdAt={grid.createdAt}
-          onUpdateLastWatered={isEditing ? undefined : handleUpdateLastWatered}
-        />
+      {/* ── Edit Mode ───────────────────────────────────────────────────────── */}
+      {isEditing ? (
+        <>
+          {/* Editable Metadata */}
+          <ThemedView style={styles.section}>
+            <ThemedText style={styles.sectionTitle}>✏️ Edit Details</ThemedText>
 
-        {/* Edit / Save / Cancel controls */}
-        {!isEditing ? (
+            <ThemedText style={editFormStyles.fieldLabel}>Garden Name</ThemedText>
+            <TextInput
+              style={editFormStyles.fieldInput}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Garden name"
+              placeholderTextColor="#aaa"
+            />
+
+            <ThemedText style={editFormStyles.fieldLabel}>Description</ThemedText>
+            <TextInput
+              style={editFormStyles.fieldInput}
+              value={editDescription}
+              onChangeText={setEditDescription}
+              placeholder="Short description"
+              placeholderTextColor="#aaa"
+            />
+
+            <ThemedText style={editFormStyles.fieldLabel}>Emoji</ThemedText>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={editFormStyles.emojiRow}>
+              {EMOJI_OPTIONS.map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={[editFormStyles.emojiChip, editEmoji === emoji && editFormStyles.emojiChipSelected]}
+                  onPress={() => setEditEmoji(emoji)}
+                  activeOpacity={0.75}
+                >
+                  <ThemedText style={editFormStyles.emojiChipText}>{emoji}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </ThemedView>
+
+          {/* Editable Grid (GridEdit) */}
+          <ThemedView style={styles.section}>
+            <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Seedling Grid</ThemedText>
+            <ThemedText style={styles.sectionHint}>
+              {grid.cols} col{grid.cols !== 1 ? 's' : ''} ×{' '}
+              {grid.rows} row{grid.rows !== 1 ? 's' : ''} ·{' '}
+              {editSeedlings.length} seedling{editSeedlings.length !== 1 ? 's' : ''} placed
+            </ThemedText>
+          </ThemedView>
+
+          <GridEdit
+            rows={grid.rows}
+            cols={grid.cols}
+            cells={editCells}
+            seedlings={editSeedlings}
+            onChange={handleGridChange}
+          />
+
+          {/* Save / Cancel */}
+          <View style={[editStyles.editActions, { marginHorizontal: 16 }]}>
+            <TouchableOpacity style={editStyles.cancelButton} onPress={handleCancel} activeOpacity={0.8}>
+              <ThemedText style={editStyles.cancelButtonText}>Cancel</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity style={editStyles.saveButton} onPress={handleSave} activeOpacity={0.8}>
+              <ThemedText style={editStyles.saveButtonText}>💾 Save Changes</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          {/* Read-only Grid (GridPreview) */}
+          <ThemedView style={styles.section}>
+            <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Seedling Grid</ThemedText>
+            <ThemedText style={styles.sectionHint}>
+              {grid.cols} col{grid.cols !== 1 ? 's' : ''} ×{' '}
+              {grid.rows} row{grid.rows !== 1 ? 's' : ''} ·{' '}
+              {grid.seedlings.length} seedling{grid.seedlings.length !== 1 ? 's' : ''} placed
+            </ThemedText>
+          </ThemedView>
+
+          <GridPreview
+            rows={grid.rows}
+            cols={grid.cols}
+            cells={grid.gridCells}
+            createdAt={grid.createdAt}
+            onUpdateLastWatered={handleUpdateLastWatered}
+          />
+
+          {/* Edit button */}
           <TouchableOpacity
-            style={editStyles.editButton}
+            style={[editStyles.editButton, { marginHorizontal: 16 }]}
             onPress={handleEditStart}
             activeOpacity={0.8}
           >
-            <ThemedText style={editStyles.editButtonText}>✏️ Edit Layout</ThemedText>
+            <ThemedText style={editStyles.editButtonText}>✏️ Edit Garden</ThemedText>
           </TouchableOpacity>
-        ) : (
-          <View style={editStyles.editActions}>
-            <TouchableOpacity
-              style={editStyles.cancelButton}
-              onPress={handleCancel}
-              activeOpacity={0.8}
-            >
-              <ThemedText style={editStyles.cancelButtonText}>Cancel</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={editStyles.saveButton}
-              onPress={handleSave}
-              activeOpacity={0.8}
-            >
-              <ThemedText style={editStyles.saveButtonText}>💾 Save Layout</ThemedText>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ThemedView>
+        </>
+      )}
 
       {/* Export */}
-      <TouchableOpacity
-        style={editStyles.exportButton}
-        onPress={handleExport}
-        disabled={isExporting}
-        activeOpacity={0.8}
-      >
-        <ThemedText style={editStyles.exportButtonText}>
-          {isExporting ? 'Exporting…' : '📤 Export Garden'}
-        </ThemedText>
-      </TouchableOpacity>
+      {!isEditing && (
+        <TouchableOpacity
+          style={editStyles.exportButton}
+          onPress={handleExport}
+          disabled={isExporting}
+          activeOpacity={0.8}
+        >
+          <ThemedText style={editStyles.exportButtonText}>
+            {isExporting ? 'Exporting…' : '📤 Export Garden'}
+          </ThemedText>
+        </TouchableOpacity>
+      )}
 
       {/* Tip of the Day */}
       <View style={styles.tipCard}>
@@ -286,4 +335,3 @@ export default function GridDetailScreen() {
     </GestureHandlerRootView>
   );
 }
-
