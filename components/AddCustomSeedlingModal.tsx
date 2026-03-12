@@ -246,9 +246,9 @@ export function AddCustomSeedlingModal({ visible, existingVarieties, nextId, onS
               />
               <Field label="When to Start" field="whenToStart" placeholder="e.g. 6-8 weeks before last frost" />
               <Field
-                label="Soil Temp for Germination (°C)"
+                label="Soil Temp for Germination (°F)"
                 field="soilTemperatureForGermination"
-                placeholder="e.g. 18-24"
+                placeholder="e.g. 65-75"
               />
             </View>
 
