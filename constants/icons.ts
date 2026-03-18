@@ -14,6 +14,7 @@
 export const ICON_HOME          = 'house.fill'              as const;
 export const ICON_ADD           = 'plus.circle.fill'        as const;
 export const ICON_GRID          = 'square.grid.2x2.fill'    as const;
+export const ICON_EDIT          = 'pencil.circle.fill'      as const;
 export const ICON_SEND          = 'paperplane.fill'         as const;
 export const ICON_CODE          = 'chevron.left.forwardslash.chevron.right' as const;
 export const ICON_CHEVRON_RIGHT = 'chevron.right'           as const;

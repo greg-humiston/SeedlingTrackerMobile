@@ -1,5 +1,5 @@
 import type { Seedling } from '@/types/home';
-import { dbGetSeedlings, dbAddSeedling, dbNextSeedlingId } from '@/services/seedlingDb';
+import { dbGetSeedlings, dbAddSeedling, dbNextSeedlingId, dbUpdateSeedling } from '@/services/seedlingDb';
 
 // ─── Delay Simulation ─────────────────────────────────────────────────────────
 
@@ -20,4 +20,9 @@ export async function addSeedling(seedling: Seedling): Promise<Seedling> {
 
 export async function nextSeedlingId(): Promise<number> {
   return dbNextSeedlingId();
+}
+
+export async function updateSeedling(id: number, updates: Partial<Seedling>): Promise<Seedling> {
+  await delay(LATENCY_MS);
+  return dbUpdateSeedling(id, updates);
 }

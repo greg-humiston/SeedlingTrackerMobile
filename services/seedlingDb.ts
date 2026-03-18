@@ -59,6 +59,17 @@ export async function dbAddSeedling(seedling: Seedling): Promise<Seedling> {
   return seedling;
 }
 
+// ─── Update ───────────────────────────────────────────────────────────────────
+
+export async function dbUpdateSeedling(id: number, updates: Partial<Seedling>): Promise<Seedling> {
+  await ensureInit();
+  const idx = cache!.findIndex((s) => s.id === id);
+  if (idx === -1) throw new Error(`Seedling ${id} not found`);
+  cache![idx] = { ...cache![idx], ...updates };
+  await persist();
+  return cache![idx];
+}
+
 // ─── ID Utility ───────────────────────────────────────────────────────────────
 
 export async function dbNextSeedlingId(): Promise<number> {
