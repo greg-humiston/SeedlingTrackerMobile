@@ -50,6 +50,20 @@ export const editStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  waterAllButton: {
+    marginTop: 12,
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#EBF4FF',
+    borderWidth: 1,
+    borderColor: '#3A86FF',
+  },
+  waterAllButtonText: {
+    color: '#3A86FF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   exportButton: {
     marginHorizontal: 16,
     marginTop: 12,

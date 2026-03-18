@@ -9,6 +9,7 @@ import { exportGrid } from '@/services/gridExport';
 import { editFormStyles } from '@/styles/grid-edit-form';
 import { editStyles, styles } from '@/styles/grid-detail';
 import type { SeedlingGrid, SelectedSeedling, Stat } from '@/types/home';
+import { getCellIndicesNeedingWater } from '@/utils/wateringUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -35,9 +36,15 @@ function StatCard({ emoji, label, value, color }: Stat) {
 
 // ─── Grid Detail View ─────────────────────────────────────────────────────────
 
-function GridDetailView({ grid }: { grid: SeedlingGrid }) {
+function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
   const router = useRouter();
   const { mutate: updateGrid } = useUpdateGrid();
+
+  // ── Watering highlight state (populated when mode === 'watering') ──────────
+
+  const [highlightedCells, setHighlightedCells] = useState<Set<number>>(() =>
+    mode === 'watering' ? getCellIndicesNeedingWater(grid.gridCells) : new Set(),
+  );
 
   // ── Edit mode state ────────────────────────────────────────────────────────
 
@@ -112,6 +119,23 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
       s.variety === targetCell.variety ? { ...s, lastWateredAt: date } : s,
     );
     updateGrid({ gridId: grid.id, updates: { gridCells: updatedGridCells, seedlings: updatedSeedlings } });
+    setHighlightedCells((prev) => {
+      const next = new Set(prev);
+      next.delete(cellIndex);
+      return next;
+    });
+  };
+
+  // ── Water all seedlings ────────────────────────────────────────────────────
+
+  const handleWaterAll = () => {
+    const today = new Date().toISOString();
+    const updatedGridCells = grid.gridCells.map((cell) =>
+      cell ? { ...cell, lastWateredAt: today } : null,
+    );
+    const updatedSeedlings = grid.seedlings.map((s) => ({ ...s, lastWateredAt: today }));
+    updateGrid({ gridId: grid.id, updates: { gridCells: updatedGridCells, seedlings: updatedSeedlings } });
+    setHighlightedCells(new Set());
   };
 
   // ── Export ─────────────────────────────────────────────────────────────────
@@ -253,7 +277,17 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
             cells={grid.gridCells}
             createdAt={grid.createdAt}
             onUpdateLastWatered={handleUpdateLastWatered}
+            highlightCellIndices={highlightedCells}
           />
+
+          {/* Water All button */}
+          <TouchableOpacity
+            style={[editStyles.waterAllButton, { marginHorizontal: 16 }]}
+            onPress={handleWaterAll}
+            activeOpacity={0.8}
+          >
+            <ThemedText style={editStyles.waterAllButtonText}>💧 Water All Seedlings</ThemedText>
+          </TouchableOpacity>
 
           {/* Edit button */}
           <TouchableOpacity
@@ -299,7 +333,7 @@ function GridDetailView({ grid }: { grid: SeedlingGrid }) {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function GridDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, mode } = useLocalSearchParams<{ id: string; mode?: string }>();
   const router  = useRouter();
   const { data: grid, isLoading, isError, error } = useGrid(id ?? '');
 
@@ -331,7 +365,7 @@ export default function GridDetailScreen() {
         </View>
       )}
 
-      {grid && <GridDetailView grid={grid} />}
+      {grid && <GridDetailView grid={grid} mode={mode} />}
     </GestureHandlerRootView>
   );
 }
