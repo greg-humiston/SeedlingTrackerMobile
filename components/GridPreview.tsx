@@ -153,6 +153,8 @@ export type GridPreviewProps = {
   cells: (CellData | null)[];
   createdAt?: string;
   onUpdateLastWatered?: (cellIndex: number, date: string) => void;
+  /** Cell indices that should be highlighted blue (needs water). */
+  highlightCellIndices?: Set<number>;
 };
 
 export default function GridPreview({
@@ -161,6 +163,7 @@ export default function GridPreview({
   cells,
   createdAt,
   onUpdateLastWatered,
+  highlightCellIndices,
 }: GridPreviewProps) {
   const [previewEntry, setPreviewEntry] = useState<{ cell: CellData; index: number } | null>(null);
 
@@ -168,7 +171,9 @@ export default function GridPreview({
     <ThemedView style={styles.section}>
       <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Grid Preview</ThemedText>
       <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
-        Hold a seedling to inspect
+        {highlightCellIndices && highlightCellIndices.size > 0
+          ? '💧 Blue cells need watering — hold to mark as watered'
+          : 'Hold a seedling to inspect'}
       </ThemedText>
       <View style={styles.gridContainer}>
         {Array.from({ length: rows }).map((_, r) => (
@@ -176,11 +181,20 @@ export default function GridPreview({
             {Array.from({ length: cols }).map((_, c) => {
               const idx  = r * cols + c;
               const cell = cells[idx] ?? null;
+              const needsWater = highlightCellIndices?.has(idx) ?? false;
               if (cell) {
                 return (
                   <TouchableOpacity
                     key={`${idx}-${cell.variety}`}
-                    style={[styles.cell, styles.cellOccupied]}
+                    style={[
+                      styles.cell,
+                      styles.cellOccupied,
+                      needsWater && {
+                        backgroundColor: '#DBEAFE',
+                        borderColor: '#3A86FF',
+                        borderWidth: 2.5,
+                      },
+                    ]}
                     onLongPress={() => setPreviewEntry({ cell, index: idx })}
                     delayLongPress={LONG_PRESS_MS}
                     activeOpacity={0.9}
