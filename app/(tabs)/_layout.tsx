@@ -3,7 +3,7 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ICON_ADD, ICON_GRID, ICON_HOME } from '@/constants/icons';
+import { ICON_ADD, ICON_EDIT, ICON_GRID, ICON_HOME } from '@/constants/icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -29,6 +29,13 @@ export default function TabLayout() {
         options={{
           title: 'Create',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name={ICON_ADD} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="edit_seedling"
+        options={{
+          title: 'Edit Seedlings',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name={ICON_EDIT} color={color} />,
         }}
       />
       <Tabs.Screen
