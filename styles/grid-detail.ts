@@ -79,6 +79,21 @@ export const editStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  deleteButton: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#FDF0F0',
+    borderWidth: 1,
+    borderColor: '#E57373',
+  },
+  deleteButtonText: {
+    color: '#C62828',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 export const styles = StyleSheet.create({

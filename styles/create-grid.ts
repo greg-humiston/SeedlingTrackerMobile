@@ -146,8 +146,8 @@ export const styles = StyleSheet.create({
   },
   cellEmoji: {
     fontSize: 38,
-    paddingTop: 25,
-    paddingBottom: 25 
+    paddingTop: 5,
+    paddingBottom: 5 
   },
   cellName: {
     fontSize: 10,

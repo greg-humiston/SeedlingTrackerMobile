@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EMOJI_MAP, EMOJI_OPTIONS, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
-import { useGrid, useUpdateGrid } from '@/hooks/useGrids';
+import { useDeleteGrid, useGrid, useUpdateGrid } from '@/hooks/useGrids';
 import { exportGrid } from '@/services/gridExport';
 import { editFormStyles } from '@/styles/grid-edit-form';
 import { editStyles, styles } from '@/styles/grid-detail';
@@ -39,6 +39,7 @@ function StatCard({ emoji, label, value, color }: Stat) {
 function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
   const router = useRouter();
   const { mutate: updateGrid } = useUpdateGrid();
+  const { mutate: deleteGrid, isPending: isDeleting } = useDeleteGrid();
 
   // ── Watering highlight state (populated when mode === 'watering') ──────────
 
@@ -136,6 +137,28 @@ function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
     const updatedSeedlings = grid.seedlings.map((s) => ({ ...s, lastWateredAt: today }));
     updateGrid({ gridId: grid.id, updates: { gridCells: updatedGridCells, seedlings: updatedSeedlings } });
     setHighlightedCells(new Set());
+  };
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Garden',
+      `Are you sure you want to delete "${grid.name}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () =>
+            deleteGrid(grid.id, {
+              onSuccess: () => router.replace('/(tabs)/'),
+              onError: (err) =>
+                Alert.alert('Delete failed', err instanceof Error ? err.message : 'An error occurred.'),
+            }),
+        },
+      ],
+    );
   };
 
   // ── Export ─────────────────────────────────────────────────────────────────
@@ -300,18 +323,31 @@ function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
         </>
       )}
 
-      {/* Export */}
+      {/* Export + Delete */}
       {!isEditing && (
-        <TouchableOpacity
-          style={editStyles.exportButton}
-          onPress={handleExport}
-          disabled={isExporting}
-          activeOpacity={0.8}
-        >
-          <ThemedText style={editStyles.exportButtonText}>
-            {isExporting ? 'Exporting…' : '📤 Export Garden'}
-          </ThemedText>
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={editStyles.exportButton}
+            onPress={handleExport}
+            disabled={isExporting}
+            activeOpacity={0.8}
+          >
+            <ThemedText style={editStyles.exportButtonText}>
+              {isExporting ? 'Exporting…' : '📤 Export Garden'}
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={editStyles.deleteButton}
+            onPress={handleDelete}
+            disabled={isDeleting}
+            activeOpacity={0.8}
+          >
+            <ThemedText style={editStyles.deleteButtonText}>
+              {isDeleting ? 'Deleting…' : '🗑 Delete Garden'}
+            </ThemedText>
+          </TouchableOpacity>
+        </>
       )}
 
       {/* Tip of the Day */}
