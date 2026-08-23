@@ -13,6 +13,7 @@
 import SeedlingSelector from '@/components/SeedlingSelector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import ZoomableGrid from '@/components/ZoomableGrid';
 import { EMOJI_MAP, EMOJI_SEEDLING } from '@/constants/icons';
 import { styles } from '@/styles/create-grid';
 import type { Seedling, SelectedSeedling } from '@/types/home';
@@ -62,6 +63,7 @@ function DraggableCell({
     .onEnd(() => { runOnJS(onTap)(index); });
 
   const pan = Gesture.Pan()
+    .maxPointers(1)
     .onStart(() => {
       scale.value = withSpring(1.1);
       runOnJS(onDragStart)();
@@ -287,37 +289,39 @@ export default function GridEdit({ rows, cols, cells, seedlings, onChange }: Gri
       <ThemedView style={styles.section}>
         <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Grid Preview</ThemedText>
         <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
-          Tap to select · Tap another to swap · Drag to rearrange
+          Tap to select · Tap another to swap · Drag to rearrange · Pinch to zoom
         </ThemedText>
-        <View style={[styles.gridContainer, isDragging && { zIndex: 20, elevation: 20 }]}>
-          {Array.from({ length: rows }).map((_, r) => (
-            <View key={r} style={styles.gridRow}>
-              {Array.from({ length: cols }).map((_, c) => {
-                const idx  = r * cols + c;
-                const cell = cells[idx] ?? null;
-                return cell ? (
-                  <DraggableCell
-                    key={`${idx}-${cell.variety}`}
-                    index={idx}
-                    cell={cell}
-                    isSelected={selectedIndex === idx}
-                    cellRefs={cellRefs}
-                    onDragEnd={handleDragEnd}
-                    onDragStart={() => { setSelectedIndex(null); setIsDragging(true); }}
-                    onTap={handleCellTap}
-                  />
-                ) : (
-                  <EmptyCell
-                    key={idx}
-                    index={idx}
-                    cellRefs={cellRefs}
-                    onTap={handleEmptyTap}
-                  />
-                );
-              })}
-            </View>
-          ))}
-        </View>
+        <ZoomableGrid>
+          <View style={[styles.gridContainer, isDragging && { zIndex: 20, elevation: 20 }]}>
+            {Array.from({ length: rows }).map((_, r) => (
+              <View key={r} style={styles.gridRow}>
+                {Array.from({ length: cols }).map((_, c) => {
+                  const idx  = r * cols + c;
+                  const cell = cells[idx] ?? null;
+                  return cell ? (
+                    <DraggableCell
+                      key={`${idx}-${cell.variety}`}
+                      index={idx}
+                      cell={cell}
+                      isSelected={selectedIndex === idx}
+                      cellRefs={cellRefs}
+                      onDragEnd={handleDragEnd}
+                      onDragStart={() => { setSelectedIndex(null); setIsDragging(true); }}
+                      onTap={handleCellTap}
+                    />
+                  ) : (
+                    <EmptyCell
+                      key={idx}
+                      index={idx}
+                      cellRefs={cellRefs}
+                      onTap={handleEmptyTap}
+                    />
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        </ZoomableGrid>
 
         {/* Trash drop zone — drag to drop, or tap when a cell is selected */}
         <TouchableOpacity

@@ -11,6 +11,7 @@
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import ZoomableGrid from '@/components/ZoomableGrid';
 import { EMOJI_MAP } from '@/constants/icons';
 import { styles } from '@/styles/create-grid';
 import { popupStyles } from '@/styles/grid-preview';
@@ -172,42 +173,44 @@ export default function GridPreview({
       <ThemedText style={styles.sectionTitle}>{EMOJI_MAP} Grid Preview</ThemedText>
       <ThemedText style={[styles.cellCountHint, { marginBottom: 8 }]}>
         {highlightCellIndices && highlightCellIndices.size > 0
-          ? '💧 Blue cells need watering — hold to mark as watered'
-          : 'Hold a seedling to inspect'}
+          ? '💧 Blue cells need watering — hold to mark as watered · Pinch to zoom'
+          : 'Hold a seedling to inspect · Pinch to zoom'}
       </ThemedText>
-      <View style={styles.gridContainer}>
-        {Array.from({ length: rows }).map((_, r) => (
-          <View key={r} style={styles.gridRow}>
-            {Array.from({ length: cols }).map((_, c) => {
-              const idx  = r * cols + c;
-              const cell = cells[idx] ?? null;
-              const needsWater = highlightCellIndices?.has(idx) ?? false;
-              if (cell) {
-                return (
-                  <TouchableOpacity
-                    key={`${idx}-${cell.variety}`}
-                    style={[
-                      styles.cell,
-                      styles.cellOccupied,
-                      needsWater && {
-                        backgroundColor: '#DBEAFE',
-                        borderColor: '#3A86FF',
-                        borderWidth: 2.5,
-                      },
-                    ]}
-                    onLongPress={() => setPreviewEntry({ cell, index: idx })}
-                    delayLongPress={LONG_PRESS_MS}
-                    activeOpacity={0.9}
-                  >
-                    <ThemedText style={styles.cellEmoji}>{cell.emoji}</ThemedText>
-                  </TouchableOpacity>
-                );
-              }
-              return <View key={idx} style={[styles.cell, styles.cellEmpty]} />;
-            })}
-          </View>
-        ))}
-      </View>
+      <ZoomableGrid>
+        <View style={styles.gridContainer}>
+          {Array.from({ length: rows }).map((_, r) => (
+            <View key={r} style={styles.gridRow}>
+              {Array.from({ length: cols }).map((_, c) => {
+                const idx  = r * cols + c;
+                const cell = cells[idx] ?? null;
+                const needsWater = highlightCellIndices?.has(idx) ?? false;
+                if (cell) {
+                  return (
+                    <TouchableOpacity
+                      key={`${idx}-${cell.variety}`}
+                      style={[
+                        styles.cell,
+                        styles.cellOccupied,
+                        needsWater && {
+                          backgroundColor: '#DBEAFE',
+                          borderColor: '#3A86FF',
+                          borderWidth: 2.5,
+                        },
+                      ]}
+                      onLongPress={() => setPreviewEntry({ cell, index: idx })}
+                      delayLongPress={LONG_PRESS_MS}
+                      activeOpacity={0.9}
+                    >
+                      <ThemedText style={styles.cellEmoji}>{cell.emoji}</ThemedText>
+                    </TouchableOpacity>
+                  );
+                }
+                return <View key={idx} style={[styles.cell, styles.cellEmpty]} />;
+              })}
+            </View>
+          ))}
+        </View>
+      </ZoomableGrid>
 
       {previewEntry && (
         <SeedlingPreviewPopup

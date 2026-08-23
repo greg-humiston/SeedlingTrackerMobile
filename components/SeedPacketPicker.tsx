@@ -1,5 +1,4 @@
 import type { DraftSeedling } from '@/types/home';
-// import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleGenAI } from "@google/genai";
 import axios from 'axios';
 import * as ExpoImagePicker from 'expo-image-picker';
@@ -91,8 +90,9 @@ ${text}`;
         setError('No text found in image.');
       }
     } catch (err) {
+      Alert.alert('Error', 'An error occurred while analyzing the image:' + err);
       console.error(err);
-      setError('An error occurred during text detection.');
+      setError('An error occurred during text detection:' + err);
     } finally {
       setLoading(false);
     }
@@ -140,9 +140,19 @@ ${text}`;
     }
   };
 
+  // const pickFromDebug = () => {
+  //   const image = require('./images/test_seedling.jpg');
+  //   const base64Image = 'data:image/jpeg;base64,' + image; // Placeholder for actual base64 conversion
+  //   analyzeImage(base64Image);
+  //   // console.log('image:', image)
+  // };
+
   // ── Entry point ──────────────────────────────────────────────────────────
 
   const handleScanPress = () => {
+    // use for debugging
+
+    // pickFromDebug();
     Alert.alert(
       'Scan Seedling Packet',
       'How would you like to provide the image?',
