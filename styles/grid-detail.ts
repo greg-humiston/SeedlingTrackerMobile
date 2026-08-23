@@ -94,6 +94,75 @@ export const editStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+
+  // ── Delete confirmation modal ────────────────────────────────────────────────
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  confirmCard: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: CREAM,
+    borderRadius: 20,
+    padding: 20,
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: SOIL_BROWN,
+    textAlign: 'center',
+  },
+  confirmMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  confirmErrorText: {
+    fontSize: 13,
+    color: '#C62828',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 18,
+  },
+  confirmCancelButton: {
+    flex: 1,
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  confirmCancelButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  confirmDeleteButton: {
+    flex: 1,
+    paddingVertical: 11,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#E57373',
+  },
+  confirmDeleteButtonDisabled: {
+    opacity: 0.6,
+  },
+  confirmDeleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 export const styles = StyleSheet.create({

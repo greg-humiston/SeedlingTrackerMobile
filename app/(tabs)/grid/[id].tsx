@@ -6,8 +6,8 @@ import { EMOJI_MAP, EMOJI_OPTIONS, EMOJI_OVERVIEW } from '@/constants/icons';
 import { GARDEN_GREEN } from '@/data/home';
 import { useDeleteGrid, useGrid, useUpdateGrid } from '@/hooks/useGrids';
 import { exportGrid } from '@/services/gridExport';
-import { editFormStyles } from '@/styles/grid-edit-form';
 import { editStyles, styles } from '@/styles/grid-detail';
+import { editFormStyles } from '@/styles/grid-edit-form';
 import type { SeedlingGrid, SelectedSeedling, Stat } from '@/types/home';
 import { getCellIndicesNeedingWater } from '@/utils/wateringUtils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,6 +15,7 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -51,6 +52,11 @@ function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // ── Delete confirmation modal state ────────────────────────────────────────
+
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Editable metadata
   const [editName, setEditName]               = useState('');
@@ -142,23 +148,24 @@ function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
   // ── Delete ─────────────────────────────────────────────────────────────────
 
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Garden',
-      `Are you sure you want to delete "${grid.name}"? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () =>
-            deleteGrid(grid.id, {
-              onSuccess: () => router.replace('/(tabs)/'),
-              onError: (err) =>
-                Alert.alert('Delete failed', err instanceof Error ? err.message : 'An error occurred.'),
-            }),
-        },
-      ],
-    );
+    setDeleteError(null);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalVisible(false);
+    setDeleteError(null);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteGrid(grid.id, {
+      onSuccess: () => {
+        setIsDeleteModalVisible(false);
+        router.replace('/(tabs)/');
+      },
+      onError: (err) =>
+        setDeleteError(err instanceof Error ? err.message : 'An error occurred.'),
+    });
   };
 
   // ── Export ─────────────────────────────────────────────────────────────────
@@ -180,6 +187,7 @@ function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
   const displayEmoji = isEditing ? editEmoji : grid.emoji;
 
   return (
+    <>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
@@ -363,6 +371,47 @@ function GridDetailView({ grid, mode }: { grid: SeedlingGrid; mode?: string }) {
         ))}
       </View>
     </ScrollView>
+
+    {/* Delete confirmation modal */}
+    <Modal
+      visible={isDeleteModalVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleCancelDelete}
+    >
+      <View style={editStyles.confirmOverlay}>
+        <View style={editStyles.confirmCard}>
+          <ThemedText style={editStyles.confirmTitle}>Delete Garden</ThemedText>
+          <ThemedText style={editStyles.confirmMessage}>
+            Are you sure you want to delete &quot;{grid.name}&quot;? This cannot be undone.
+          </ThemedText>
+          {deleteError && (
+            <ThemedText style={editStyles.confirmErrorText}>{deleteError}</ThemedText>
+          )}
+          <View style={editStyles.confirmActions}>
+            <TouchableOpacity
+              style={editStyles.confirmCancelButton}
+              onPress={handleCancelDelete}
+              disabled={isDeleting}
+              activeOpacity={0.8}
+            >
+              <ThemedText style={editStyles.confirmCancelButtonText}>Cancel</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[editStyles.confirmDeleteButton, isDeleting && editStyles.confirmDeleteButtonDisabled]}
+              onPress={handleConfirmDelete}
+              disabled={isDeleting}
+              activeOpacity={0.8}
+            >
+              <ThemedText style={editStyles.confirmDeleteButtonText}>
+                {isDeleting ? 'Deleting…' : 'Delete'}
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }
 
