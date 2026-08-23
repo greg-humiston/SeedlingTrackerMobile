@@ -1,5 +1,6 @@
 import type { DraftSeedling } from '@/types/home';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from "@google/genai";
 import axios from 'axios';
 import * as ExpoImagePicker from 'expo-image-picker';
 import { useState } from 'react';
@@ -18,8 +19,8 @@ export function SeedPacketPicker({ onSeedlingExtracted }: Props) {
   // ── Gemini extraction ────────────────────────────────────────────────────
 
   const extractSeedlingFromText = async (text: string): Promise<DraftSeedling | null> => {
-    const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    // const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY!);
+    const genAI = new GoogleGenAI({apiKey: GOOGLE_API_KEY!});
 
     const prompt = `You are a gardening assistant. Extract seedling/plant information from the following seed packet text and return ONLY a valid JSON object with no markdown formatting.
 
@@ -51,8 +52,11 @@ JSON fields to populate:
 Seed packet text:
 ${text}`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim().replace(/^```json\n?|```$/g, '');
+    const response = await genAI.models.generateContent({
+      model: "gemini-3.7-flash",
+      contents: prompt,
+    });
+    const responseText = response?.text?.trim().replace(/^```json\n?|```$/g, '') || '';
     return JSON.parse(responseText) as DraftSeedling;
   };
 
